@@ -24,8 +24,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   // Extract business function ID from path
-  const businessFunctionId = pathname.includes("/business-function/")
-    ? pathname.split("/business-function/")[1].split("/")[0]
+  const businessFunctionId = pathname.includes("/app/business-function/")
+    ? pathname.split("/app/business-function/")[1].split("/app/")[0]
     : null;
 
   // Get projects for the current business function
@@ -46,7 +46,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <SheetContent side="left" className="w-72 p-0">
             <div className="flex h-16 items-center border-b px-6">
               <Link
-                href="/"
+                href="/app/"
                 className="flex items-center gap-2 text-lg font-semibold"
                 onClick={() => setOpen(false)}
               >
@@ -58,10 +58,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <div className="px-6 py-4">
                 <nav className="grid gap-2 text-lg font-medium">
                   <Link
-                    href="/"
+                    href="/app/"
                     className={cn(
                       "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                      pathname === "/" ? "bg-accent" : "hover:bg-accent",
+                      pathname === "/app/" ? "bg-accent" : "hover:bg-accent",
                     )}
                     onClick={() => setOpen(false)}
                   >
@@ -75,10 +75,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     {businessFunctions.map((bf) => (
                       <Link
                         key={bf.id}
-                        href={`/business-function/${bf.id}`}
+                        href={`/app/business-function/${bf.id}`}
                         className={cn(
                           "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                          pathname === `/business-function/${bf.id}`
+                          pathname === `/app/business-function/${bf.id}`
                             ? "bg-accent"
                             : "hover:bg-accent",
                         )}
@@ -96,11 +96,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       {projects.map((project) => (
                         <Link
                           key={project.id}
-                          href={`/business-function/${businessFunctionId}/project/${project.id}`}
+                          href={`/app/business-function/${businessFunctionId}/project/${project.id}`}
                           className={cn(
                             "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
                             pathname ===
-                              `/business-function/${businessFunctionId}/project/${project.id}`
+                              `/app/business-function/${businessFunctionId}/project/${project.id}`
                               ? "bg-accent"
                               : "hover:bg-accent",
                           )}
@@ -117,7 +117,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
         <Link
-          href="/"
+          href="/app/"
           className="flex items-center gap-2 text-lg font-semibold"
         >
           <LayoutDashboard className="h-6 w-6" />
@@ -135,10 +135,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <ScrollArea className="h-[calc(100vh-4rem)]">
             <div className="flex flex-col gap-2 p-4">
               <Link
-                href="/"
+                href="/app/"
                 className={cn(
                   "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                  pathname === "/" ? "bg-accent" : "hover:bg-accent",
+                  pathname === "/app/" ? "bg-accent" : "hover:bg-accent",
                 )}
               >
                 <Home className="h-4 w-4" />
@@ -157,10 +157,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 {businessFunctions.map((bf) => (
                   <Link
                     key={bf.id}
-                    href={`/business-function/${bf.id}`}
+                    href={`/app/business-function/${bf.id}`}
                     className={cn(
                       "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
-                      pathname === `/business-function/${bf.id}`
+                      pathname === `/app/business-function/${bf.id}`
                         ? "bg-accent"
                         : "hover:bg-accent",
                     )}
@@ -184,11 +184,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   {projects.map((project) => (
                     <Link
                       key={project.id}
-                      href={`/business-function/${businessFunctionId}/project/${project.id}`}
+                      href={`/app/business-function/${businessFunctionId}/project/${project.id}`}
                       className={cn(
                         "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
                         pathname ===
-                          `/business-function/${businessFunctionId}/project/${project.id}`
+                          `/app/business-function/${businessFunctionId}/project/${project.id}`
                           ? "bg-accent"
                           : "hover:bg-accent",
                       )}
