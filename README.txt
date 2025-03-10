@@ -1,3 +1,10 @@
+## Running The App
+
+```
+pnpm install
+pnpm run dev
+```
+
 ## Main Application
 The main application is on the route `/app`. e.g http://localhost:3000/app
 
