@@ -12,17 +12,51 @@ export interface Config {
   };
   collections: {
     users: User;
-    media: Media;
+    tools: Tool;
+    agents: Agent;
+    teams: Team;
+    toolspec: Toolspec;
+    epics: Epic;
+    tasks: Task;
+    squads: Squad;
+    projects: Project;
+    colleagues: Colleague;
+    functions: Function;
+    knowledgeBases: KnowledgeBase;
+    'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
+  collectionsJoins: {};
+  collectionsSelect: {
+    users: UsersSelect<false> | UsersSelect<true>;
+    tools: ToolsSelect<false> | ToolsSelect<true>;
+    agents: AgentsSelect<false> | AgentsSelect<true>;
+    teams: TeamsSelect<false> | TeamsSelect<true>;
+    toolspec: ToolspecSelect<false> | ToolspecSelect<true>;
+    epics: EpicsSelect<false> | EpicsSelect<true>;
+    tasks: TasksSelect<false> | TasksSelect<true>;
+    squads: SquadsSelect<false> | SquadsSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    colleagues: ColleaguesSelect<false> | ColleaguesSelect<true>;
+    functions: FunctionsSelect<false> | FunctionsSelect<true>;
+    knowledgeBases: KnowledgeBasesSelect<false> | KnowledgeBasesSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+  };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
+  globalsSelect: {};
   locale: null;
   user: User & {
     collection: 'users';
+  };
+  jobs: {
+    tasks: unknown;
+    workflows: unknown;
   };
 }
 export interface UserAuthOperations {
@@ -48,7 +82,8 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  name: string;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -62,32 +97,225 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "tools".
  */
-export interface Media {
-  id: string;
-  alt: string;
+export interface Tool {
+  id: number;
+  toolSpec?: (number | null) | Toolspec;
+  name: string;
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "toolspec".
+ */
+export interface Toolspec {
+  id: number;
+  name: string;
+  description?: string | null;
+  spec?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agents".
+ */
+export interface Agent {
+  id: number;
+  name: string;
+  tools?: (number | Tool)[] | null;
+  description?: string | null;
+  systemMsg?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams".
+ */
+export interface Team {
+  id: number;
+  name: string;
+  description?: string | null;
+  type: 'SelectorGroupChat' | 'RoundRobinGroupChat' | 'Swarm';
+  agents?: (number | Agent)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "epics".
+ */
+export interface Epic {
+  id: number;
+  name: string;
+  description?: string | null;
+  project?: (number | null) | Project;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  name: string;
+  description?: string | null;
+  workInstructions?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tasks".
+ */
+export interface Task {
+  id: number;
+  name?: string | null;
+  description?: string | null;
+  assignee?: (number | null) | Colleague;
+  status: 'backlog' | 'todo' | 'inProgress' | 'done' | 'cancelled';
+  project?: (number | null) | Project;
+  parents?: (number | Task)[] | null;
+  dateLogged: string;
+  closureDate?: string | null;
+  comments?:
+    | {
+        text: string;
+        author: number | User;
+        timestamp: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "colleagues".
+ */
+export interface Colleague {
+  id: number;
+  colleagueType: 'human' | 'digital';
+  agents?: (number | null) | Agent;
+  humans?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "squads".
+ */
+export interface Squad {
+  id: number;
+  name: string;
+  description?: string | null;
+  colleagues?: (number | Colleague)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "functions".
+ */
+export interface Function {
+  id: number;
+  name: string;
+  description?: string | null;
+  systemMsg?: string | null;
+  squad?: (number | null) | Squad;
+  knowledeBase?: (number | null) | KnowledgeBase;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "knowledgeBases".
+ */
+export interface KnowledgeBase {
+  id: number;
+  knowledgeBaseId: string;
+  name?: string | null;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents".
+ */
+export interface PayloadLockedDocument {
+  id: number;
+  document?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'tools';
+        value: number | Tool;
+      } | null)
+    | ({
+        relationTo: 'agents';
+        value: number | Agent;
+      } | null)
+    | ({
+        relationTo: 'teams';
+        value: number | Team;
+      } | null)
+    | ({
+        relationTo: 'toolspec';
+        value: number | Toolspec;
+      } | null)
+    | ({
+        relationTo: 'epics';
+        value: number | Epic;
+      } | null)
+    | ({
+        relationTo: 'tasks';
+        value: number | Task;
+      } | null)
+    | ({
+        relationTo: 'squads';
+        value: number | Squad;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'colleagues';
+        value: number | Colleague;
+      } | null)
+    | ({
+        relationTo: 'functions';
+        value: number | Function;
+      } | null)
+    | ({
+        relationTo: 'knowledgeBases';
+        value: number | KnowledgeBase;
+      } | null);
+  globalSlug?: string | null;
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -107,11 +335,197 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tools_select".
+ */
+export interface ToolsSelect<T extends boolean = true> {
+  toolSpec?: T;
+  name?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agents_select".
+ */
+export interface AgentsSelect<T extends boolean = true> {
+  name?: T;
+  tools?: T;
+  description?: T;
+  systemMsg?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams_select".
+ */
+export interface TeamsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  type?: T;
+  agents?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "toolspec_select".
+ */
+export interface ToolspecSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  spec?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "epics_select".
+ */
+export interface EpicsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  project?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tasks_select".
+ */
+export interface TasksSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  assignee?: T;
+  status?: T;
+  project?: T;
+  parents?: T;
+  dateLogged?: T;
+  closureDate?: T;
+  comments?:
+    | T
+    | {
+        text?: T;
+        author?: T;
+        timestamp?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "squads_select".
+ */
+export interface SquadsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  colleagues?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  workInstructions?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "colleagues_select".
+ */
+export interface ColleaguesSelect<T extends boolean = true> {
+  colleagueType?: T;
+  agents?: T;
+  humans?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "functions_select".
+ */
+export interface FunctionsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  systemMsg?: T;
+  squad?: T;
+  knowledeBase?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "knowledgeBases_select".
+ */
+export interface KnowledgeBasesSelect<T extends boolean = true> {
+  knowledgeBaseId?: T;
+  name?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents_select".
+ */
+export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-preferences_select".
+ */
+export interface PayloadPreferencesSelect<T extends boolean = true> {
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-migrations_select".
+ */
+export interface PayloadMigrationsSelect<T extends boolean = true> {
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
