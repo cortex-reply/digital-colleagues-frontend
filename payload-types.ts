@@ -220,7 +220,21 @@ export interface Project {
   id: number;
   name: string;
   description?: string | null;
-  workInstructions?: string | null;
+  workInstructions?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -281,6 +295,21 @@ export interface Function {
   id: number;
   name: string;
   description?: string | null;
+  waysOfWorking?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   systemMsg?: string | null;
   squad?: (number | null) | Squad;
   knowledeBase?: (number | null) | KnowledgeBase;
@@ -533,6 +562,7 @@ export interface ColleaguesSelect<T extends boolean = true> {
 export interface FunctionsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
+  waysOfWorking?: T;
   systemMsg?: T;
   squad?: T;
   knowledeBase?: T;

@@ -1,4 +1,10 @@
 import type { CollectionConfig } from "payload";
+import {
+  FixedToolbarFeature,
+  HeadingFeature,
+  InlineToolbarFeature,
+  lexicalEditor,
+} from '@payloadcms/richtext-lexical';
 
 export const Functions: CollectionConfig = {
   slug: "functions",
@@ -17,6 +23,21 @@ export const Functions: CollectionConfig = {
     {
       name: "description",
       type: "textarea",
+    },
+    {
+      name: 'waysOfWorking',
+      label: 'Ways of working',
+      type: 'richText',
+      editor: lexicalEditor({
+        features: ({ rootFeatures }) => {
+          return [
+            ...rootFeatures,
+            HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+            FixedToolbarFeature(),
+            InlineToolbarFeature(),
+          ]
+        },
+      }),
     },
     {
       name: "systemMsg",
