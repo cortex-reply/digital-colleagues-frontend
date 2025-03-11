@@ -2,10 +2,24 @@ export interface BusinessFunction {
   id: string
   name: string
   description: string
+  waysOfWorking?: string
+  squad?: Squad
+  knowledgeBase?: KnowledgeBase
   memberCount: number
   projectCount: number
   members: User[]
   messages: Message[]
+}
+
+export interface Squad {
+  id: string
+  name: string
+  members: User[]
+}
+
+export interface KnowledgeBase {
+  id: string
+  name: string
 }
 
 export interface Project {
@@ -20,6 +34,7 @@ export interface Project {
   messages: Message[]
   events: Event[]
   comments: Comment[]
+  workInstructions?: string
 }
 
 export interface Task {
@@ -33,6 +48,11 @@ export interface Task {
   dueDate?: string
   epicId?: string
   projectId: string
+  isBlocked: boolean
+  blockedBy?: string
+  blockedByTitle?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface User {

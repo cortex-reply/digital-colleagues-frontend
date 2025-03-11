@@ -16,8 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PlusCircle, Upload, Layers } from "lucide-react"
+import { PlusCircle, Layers } from "lucide-react"
 import { KanbanBoard } from "@/components/project/kanban-board"
 import { CalendarView } from "@/components/project/calendar-view"
 import { ChatInterface } from "@/components/chat/chat-interface"
@@ -26,6 +25,7 @@ import { CommentsFeed } from "@/components/project/comments-feed"
 import { TaskModal } from "@/components/project/task-modal"
 import type { Project, Task, Comment } from "@/lib/types"
 import { users } from "@/lib/data" // Import users from your data file
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function ProjectView({ project: initialProject }: { project: Project }) {
   const [project, setProject] = useState(initialProject)
@@ -34,9 +34,9 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    type: "task",
-    status: "todo",
-    priority: "medium",
+    type: "task" as const,
+    status: "todo" as const,
+    priority: "medium" as const,
     assignee: "",
     dueDate: "",
   })
@@ -44,16 +44,7 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
 
   const handleCreateTask = () => {
     // In a real app, this would add to the database
-    const createdTask: Task = {
-      ...newTask,
-      id: `task-${Date.now()}`,
-      projectId: project.id,
-    }
-    setProject((prev) => ({
-      ...prev,
-      tasks: [...prev.tasks, createdTask],
-      taskCount: prev.taskCount + 1,
-    }))
+    console.log("Creating task:", newTask)
     setOpen(false)
     setNewTask({
       title: "",
@@ -64,7 +55,6 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
       assignee: "",
       dueDate: "",
     })
-    setFile(null)
   }
 
   const handleTaskUpdate = (updatedTask: Task) => {
@@ -103,13 +93,13 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <PlusCircle className="h-4 w-4" />
-              Create Job
+              Create Task
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle>Create Job</DialogTitle>
-              <DialogDescription>Add a new task, epic, or story to this project</DialogDescription>
+              <DialogTitle>Create Task</DialogTitle>
+              <DialogDescription>Add a new task to this project</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -123,11 +113,26 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                   onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                 />
               </div>
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="description" className="text-right pt-2">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  className="col-span-3"
+                  rows={3}
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                />
+              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="type" className="text-right">
                   Type
                 </Label>
-                <Select value={newTask.type} onValueChange={(value) => setNewTask({ ...newTask, type: value })}>
+                <Select
+                  value={newTask.type}
+                  onValueChange={(value) => setNewTask({ ...newTask, type: value as "task" | "epic" | "story" })}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
@@ -142,7 +147,12 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                 <Label htmlFor="status" className="text-right">
                   Status
                 </Label>
-                <Select value={newTask.status} onValueChange={(value) => setNewTask({ ...newTask, status: value })}>
+                <Select
+                  value={newTask.status}
+                  onValueChange={(value) =>
+                    setNewTask({ ...newTask, status: value as "todo" | "in-progress" | "review" | "done" })
+                  }
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -158,7 +168,10 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                 <Label htmlFor="priority" className="text-right">
                   Priority
                 </Label>
-                <Select value={newTask.priority} onValueChange={(value) => setNewTask({ ...newTask, priority: value })}>
+                <Select
+                  value={newTask.priority}
+                  onValueChange={(value) => setNewTask({ ...newTask, priority: value as "low" | "medium" | "high" })}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
@@ -198,45 +211,9 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                   onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="description" className="text-right pt-2">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  className="col-span-3"
-                  rows={3}
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="file" className="text-right">
-                  Attachment
-                </Label>
-                <div className="col-span-3">
-                  <Label
-                    htmlFor="file"
-                    className="flex items-center gap-2 border rounded-md p-2 cursor-pointer hover:bg-muted transition-colors"
-                  >
-                    <Upload className="h-4 w-4" />
-                    {file ? file.name : "Upload file"}
-                  </Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files.length > 0) {
-                        setFile(e.target.files[0])
-                      }
-                    }}
-                  />
-                </div>
-              </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleCreateTask}>Create</Button>
+              <Button onClick={handleCreateTask}>Create Task</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { AlertCircle, CheckCircle } from "lucide-react"
+import Link from "next/link"
 import type { Task } from "@/lib/types"
 
 interface KanbanBoardProps {
@@ -144,8 +146,27 @@ export function KanbanBoard({ tasks, onTaskClick }: KanbanBoardProps) {
                                     >
                                       {task.priority}
                                     </Badge>
+                                    {task.isBlocked ? (
+                                      <Badge variant="destructive" className="rounded-md flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3" />
+                                        Blocked
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="success" className="rounded-md flex items-center gap-1">
+                                        <CheckCircle className="w-3 h-3" />
+                                        Ready
+                                      </Badge>
+                                    )}
                                   </div>
                                   <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{task.description}</p>
+                                  {task.isBlocked && task.blockedBy && task.blockedByTitle && (
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                      Blocked by:{" "}
+                                      <Link href={`#${task.blockedBy}`} className="text-primary hover:underline">
+                                        {task.blockedByTitle}
+                                      </Link>
+                                    </p>
+                                  )}
                                   {task.dueDate && (
                                     <p className="text-xs mt-2 text-muted-foreground">
                                       Due: {new Date(task.dueDate).toLocaleDateString()}

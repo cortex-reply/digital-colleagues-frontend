@@ -6,12 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import type { User } from "@/lib/types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
-interface TeamMembersListProps {
+interface SquadMembersListProps {
   members: User[]
   onRemoveMember: (userId: string) => void
 }
 
-export function TeamMembersList({ members, onRemoveMember }: TeamMembersListProps) {
+export function SquadMembersList({ members, onRemoveMember }: SquadMembersListProps) {
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {members.map((member) => (
@@ -29,7 +29,7 @@ export function TeamMembersList({ members, onRemoveMember }: TeamMembersListProp
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onSelect={() => onRemoveMember(member.id)}>Remove from team</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onRemoveMember(member.id)}>Remove from squad</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <div className="flex-1">

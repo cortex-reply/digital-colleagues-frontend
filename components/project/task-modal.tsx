@@ -1,13 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
+import { AlertCircle, CheckCircle, Link2, Paperclip, Plus } from "lucide-react"
 import type { Task, User, Comment } from "@/lib/types"
 
 interface TaskModalProps {
@@ -23,13 +25,15 @@ interface TaskModalProps {
 export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, onAddComment }: TaskModalProps) {
   const [editedTask, setEditedTask] = useState(task)
   const [newComment, setNewComment] = useState("")
+  const [editingField, setEditingField] = useState<string | null>(null)
 
   const handleInputChange = (field: keyof Task, value: string) => {
     setEditedTask({ ...editedTask, [field]: value })
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = (field: keyof Task) => {
     onUpdate(editedTask)
+    setEditingField(null)
   }
 
   const handleAddComment = () => {
@@ -44,135 +48,202 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
     }
   }
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>
-            <Input
-              value={editedTask.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              className="text-xl font-bold"
-            />
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="type" className="text-right">
-              Type
-            </label>
-            <Select value={editedTask.type} onValueChange={(value) => handleInputChange("type", value)}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select type" />
+  const renderField = (
+    field: keyof Task,
+    label: string,
+    type: "text" | "textarea" | "select",
+    options?: { value: string; label: string }[],
+  ) => {
+    const isEditing = editingField === field
+
+    if (isEditing) {
+      if (type === "select" && options) {
+        return (
+          <div className="flex items-center gap-2">
+            <Select value={editedTask[field] as string} onValueChange={(value) => handleInputChange(field, value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="task">Task</SelectItem>
-                <SelectItem value="epic">Epic</SelectItem>
-                <SelectItem value="story">Story</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="status" className="text-right">
-              Status
-            </label>
-            <Select value={editedTask.status} onValueChange={(value) => handleInputChange("status", value)}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todo">To Do</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="review">Review</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="priority" className="text-right">
-              Priority
-            </label>
-            <Select value={editedTask.priority} onValueChange={(value) => handleInputChange("priority", value)}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="assignee" className="text-right">
-              Assignee
-            </label>
-            <Select value={editedTask.assignee} onValueChange={(value) => handleInputChange("assignee", value)}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select assignee" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name}
+                {options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <Button size="sm" onClick={() => handleUpdate(field)}>
+              Save
+            </Button>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="dueDate" className="text-right">
-              Due Date
-            </label>
-            <Input
-              id="dueDate"
-              type="date"
-              value={editedTask.dueDate}
-              onChange={(e) => handleInputChange("dueDate", e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-start gap-4">
-            <label htmlFor="description" className="text-right pt-2">
-              Description
-            </label>
+        )
+      }
+
+      return (
+        <div className="flex items-start gap-2">
+          {type === "textarea" ? (
             <Textarea
-              id="description"
-              value={editedTask.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              className="col-span-3"
-              rows={3}
-            />
-          </div>
-        </div>
-        <Button onClick={handleUpdate}>Update Task</Button>
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Comments</h3>
-          <div className="space-y-4 max-h-60 overflow-y-auto">
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex items-start space-x-4">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-                  <AvatarFallback>{comment.user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">{comment.user.name}</p>
-                  <p className="text-sm">{comment.content}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex items-center space-x-2">
-            <Input
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
+              value={editedTask[field] as string}
+              onChange={(e) => handleInputChange(field, e.target.value)}
               className="flex-1"
             />
-            <Button onClick={handleAddComment}>Add Comment</Button>
+          ) : (
+            <Input
+              value={editedTask[field] as string}
+              onChange={(e) => handleInputChange(field, e.target.value)}
+              className="flex-1"
+            />
+          )}
+          <Button size="sm" onClick={() => handleUpdate(field)}>
+            Save
+          </Button>
+        </div>
+      )
+    }
+
+    return (
+      <div className="cursor-pointer hover:bg-muted/50 rounded-md p-1 -m-1" onClick={() => setEditingField(field)}>
+        {editedTask[field] || "Click to edit"}
+      </div>
+    )
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+        <div className="flex-1 overflow-auto">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
+            {/* Main Content */}
+            <div className="space-y-6">
+              {/* Title */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">Title</div>
+                {renderField("title", "Title", "text")}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">Description</div>
+                {renderField("description", "Description", "textarea")}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Paperclip className="h-4 w-4" />
+                  Attach
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add subtask
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Link2 className="h-4 w-4" />
+                  Link issue
+                </Button>
+              </div>
+
+              {/* Comments */}
+              <div className="space-y-4">
+                <div className="text-sm font-medium text-muted-foreground">Comments</div>
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="flex items-start space-x-4">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+                        <AvatarFallback>{comment.user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium">{comment.user.name}</p>
+                        <p className="text-sm">{comment.content}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={users[0].avatar} alt={users[0].name} />
+                    <AvatarFallback>{users[0].name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-2">
+                    <Textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Add a comment..."
+                      className="min-h-[100px]"
+                    />
+                    <Button onClick={handleAddComment}>Comment</Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Status */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">Status</div>
+                {renderField("status", "Status", "select", [
+                  { value: "todo", label: "To Do" },
+                  { value: "in-progress", label: "In Progress" },
+                  { value: "review", label: "Review" },
+                  { value: "done", label: "Done" },
+                ])}
+              </div>
+
+              {/* Blocked Status */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">Status</div>
+                {editedTask.isBlocked ? (
+                  <Badge variant="destructive" className="flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Blocked by{" "}
+                    <span className="ml-1 text-primary-foreground underline">{editedTask.blockedByTitle}</span>
+                  </Badge>
+                ) : (
+                  <Badge variant="success" className="flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Ready
+                  </Badge>
+                )}
+              </div>
+
+              {/* Assignee */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">Assignee</div>
+                {renderField(
+                  "assignee",
+                  "Assignee",
+                  "select",
+                  users.map((user) => ({ value: user.id, label: user.name })),
+                )}
+              </div>
+
+              {/* Priority */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">Priority</div>
+                {renderField("priority", "Priority", "select", [
+                  { value: "low", label: "Low" },
+                  { value: "medium", label: "Medium" },
+                  { value: "high", label: "High" },
+                ])}
+              </div>
+
+              {/* Due Date */}
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">Due Date</div>
+                {renderField("dueDate", "Due Date", "text")}
+              </div>
+
+              {/* Created/Updated Info */}
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div>Created {formatDistanceToNow(new Date(task.createdAt || Date.now()), { addSuffix: true })}</div>
+                <div>Updated {formatDistanceToNow(new Date(task.updatedAt || Date.now()), { addSuffix: true })}</div>
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>
