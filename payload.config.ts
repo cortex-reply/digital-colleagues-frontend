@@ -11,7 +11,7 @@ import { Users } from "./collections/Users";
 import { Tools } from "./collections/Tools";
 import { Agents } from "./collections/Agents";
 import { Teams } from "./collections/Teams";
-import { Toolspec } from "./collections/Toolspec";
+import { Toolspecs } from "./collections/Toolspecs";
 import { Epics } from "./collections/Epics";
 import { Tasks } from "./collections/Tasks";
 import { Squads } from "./collections/Squads";

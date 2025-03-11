@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
-export const Toolspec: CollectionConfig = {
-  slug: 'toolspec',
+export const Toolspecs: CollectionConfig = {
+  slug: 'toolspecs',
   access: {
     read: () => true, // Public read access
   },

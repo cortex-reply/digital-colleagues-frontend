@@ -10,9 +10,9 @@ export const Tools: CollectionConfig = {
   },
   fields: [
     {
-      name: 'toolSpec',
+      name: 'toolSpecs',
       type: 'relationship',
-      relationTo: 'toolspec',
+      relationTo: 'toolspecs',
       hasMany: false,
     },
     {

@@ -34,7 +34,7 @@ export const Colleagues: CollectionConfig = {
       }
     },
     {
-      name: "humans",
+      name: "human",
       type: "relationship",
       relationTo : "users",
       hasMany: false,
