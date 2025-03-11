@@ -70,7 +70,7 @@ export interface Config {
     tools: Tool;
     agents: Agent;
     teams: Team;
-    toolspec: Toolspec;
+    toolspecs: Toolspec;
     epics: Epic;
     tasks: Task;
     squads: Squad;
@@ -88,7 +88,7 @@ export interface Config {
     tools: ToolsSelect<false> | ToolsSelect<true>;
     agents: AgentsSelect<false> | AgentsSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
-    toolspec: ToolspecSelect<false> | ToolspecSelect<true>;
+    toolspecs: ToolspecsSelect<false> | ToolspecsSelect<true>;
     epics: EpicsSelect<false> | EpicsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
     squads: SquadsSelect<false> | SquadsSelect<true>;
@@ -156,7 +156,7 @@ export interface User {
  */
 export interface Tool {
   id: number;
-  toolSpec?: (number | null) | Toolspec;
+  toolSpecs?: (number | null) | Toolspec;
   name: string;
   description?: string | null;
   updatedAt: string;
@@ -164,7 +164,7 @@ export interface Tool {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "toolspec".
+ * via the `definition` "toolspecs".
  */
 export interface Toolspec {
   id: number;
@@ -271,7 +271,7 @@ export interface Colleague {
   id: number;
   colleagueType: 'human' | 'digital';
   agents?: (number | null) | Agent;
-  humans?: (number | null) | User;
+  human?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -352,7 +352,7 @@ export interface PayloadLockedDocument {
         value: number | Team;
       } | null)
     | ({
-        relationTo: 'toolspec';
+        relationTo: 'toolspecs';
         value: number | Toolspec;
       } | null)
     | ({
@@ -446,7 +446,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "tools_select".
  */
 export interface ToolsSelect<T extends boolean = true> {
-  toolSpec?: T;
+  toolSpecs?: T;
   name?: T;
   description?: T;
   updatedAt?: T;
@@ -478,9 +478,9 @@ export interface TeamsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "toolspec_select".
+ * via the `definition` "toolspecs_select".
  */
-export interface ToolspecSelect<T extends boolean = true> {
+export interface ToolspecsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
   spec?: T;
@@ -551,7 +551,7 @@ export interface ProjectsSelect<T extends boolean = true> {
 export interface ColleaguesSelect<T extends boolean = true> {
   colleagueType?: T;
   agents?: T;
-  humans?: T;
+  human?: T;
   updatedAt?: T;
   createdAt?: T;
 }

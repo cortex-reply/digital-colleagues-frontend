@@ -35,7 +35,7 @@ export default buildConfig({
     Tools,
     Agents,
     Teams,
-    Toolspec,
+    Toolspecs,
     Epics,
     Tasks,
     Squads,
