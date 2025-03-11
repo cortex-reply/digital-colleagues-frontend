@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusCircle, Layers } from "lucide-react"
 import { KanbanBoard } from "@/components/project/kanban-board"
 import { CalendarView } from "@/components/project/calendar-view"
@@ -25,7 +26,6 @@ import { CommentsFeed } from "@/components/project/comments-feed"
 import { TaskModal } from "@/components/project/task-modal"
 import type { Project, Task, Comment } from "@/lib/types"
 import { users } from "@/lib/data" // Import users from your data file
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function ProjectView({ project: initialProject }: { project: Project }) {
   const [project, setProject] = useState(initialProject)
@@ -35,7 +35,7 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
     title: "",
     description: "",
     type: "task" as const,
-    status: "todo" as const,
+    status: "backlog" as const,
     priority: "medium" as const,
     assignee: "",
     dueDate: "",
@@ -50,11 +50,12 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
       title: "",
       description: "",
       type: "task",
-      status: "todo",
+      status: "backlog",
       priority: "medium",
       assignee: "",
       dueDate: "",
     })
+    setFile(null)
   }
 
   const handleTaskUpdate = (updatedTask: Task) => {
@@ -150,13 +151,14 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                 <Select
                   value={newTask.status}
                   onValueChange={(value) =>
-                    setNewTask({ ...newTask, status: value as "todo" | "in-progress" | "review" | "done" })
+                    setNewTask({ ...newTask, status: value as "backlog" | "todo" | "in-progress" | "review" | "done" })
                   }
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="backlog">Backlog</SelectItem>
                     <SelectItem value="todo">To Do</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
                     <SelectItem value="review">Review</SelectItem>

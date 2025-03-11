@@ -42,7 +42,7 @@ export interface Task {
   title: string
   description: string
   type: "task" | "epic" | "story"
-  status: "todo" | "in-progress" | "review" | "done"
+  status: "backlog" | "todo" | "in-progress" | "review" | "done"
   priority: "low" | "medium" | "high"
   assignee?: string
   dueDate?: string

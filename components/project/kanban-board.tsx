@@ -20,6 +20,11 @@ export function KanbanBoard({ tasks, onTaskClick }: KanbanBoardProps) {
   const [filter, setFilter] = useState<string | null>(null)
 
   const columns = {
+    backlog: {
+      id: "backlog",
+      title: "Backlog",
+      taskIds: taskList.filter((t) => t.status === "backlog" && (!filter || t.epicId === filter)).map((t) => t.id),
+    },
     todo: {
       id: "todo",
       title: "To Do",
@@ -86,7 +91,7 @@ export function KanbanBoard({ tasks, onTaskClick }: KanbanBoardProps) {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {Object.values(columns).map((column) => (
             <div key={column.id} className="space-y-4">
               <div className="flex items-center justify-between">
