@@ -22,7 +22,7 @@ export const Tasks: CollectionConfig = {
       type: "relationship",
       relationTo: "colleagues",
       required: false,
-      hasMany: false
+      hasMany: false,
     },
     {
       name: "status",
@@ -41,12 +41,18 @@ export const Tasks: CollectionConfig = {
       name: "project",
       type: "relationship",
       relationTo: "projects",
-      hasMany: false
+      hasMany: false,
     },
     {
-      name: 'parents',
-      type: 'relationship',
-      relationTo: 'tasks',
+      name: "epic",
+      type: "relationship",
+      relationTo: "epics",
+      hasMany: false,
+    },
+    {
+      name: "parents",
+      type: "relationship",
+      relationTo: "tasks",
       hasMany: true,
     },
     {

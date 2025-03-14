@@ -1,5 +1,12 @@
-import type { BusinessFunction, Project, Task, User, Message, Event } from "./types"
-import type { Comment } from "./types"
+import type {
+  BusinessFunction,
+  Project,
+  Task,
+  User,
+  Message,
+  Event,
+} from "./types";
+import type { Comment } from "./types";
 
 // Sample users
 export const users: User[] = [
@@ -43,7 +50,7 @@ export const users: User[] = [
     isAI: true,
     skills: ["Code Generation", "Debugging"],
   },
-]
+];
 
 // Sample messages
 const sampleMessages: Message[] = [
@@ -61,11 +68,12 @@ const sampleMessages: Message[] = [
   },
   {
     id: "msg3",
-    content: "Based on the requirements, I suggest we use Next.js for this project.",
+    content:
+      "Based on the requirements, I suggest we use Next.js for this project.",
     sender: users[4],
     timestamp: "2023-06-15T10:40:00Z",
   },
-]
+];
 
 // Sample tasks
 const sampleTasks: Task[] = [
@@ -202,13 +210,14 @@ const sampleTasks: Task[] = [
     dueDate: "2023-06-28",
     projectId: "project2",
   },
-]
+];
 
 // Sample projects
 const sampleEvents: Event[] = [
   {
     id: "event1",
-    description: "Updated the status of 'Implement Authentication' to 'In Progress'",
+    description:
+      "Updated the status of 'Implement Authentication' to 'In Progress'",
     timestamp: "2023-06-16T10:30:00Z",
     user: users[1],
     taskId: "task2",
@@ -227,13 +236,14 @@ const sampleEvents: Event[] = [
     user: users[2],
     taskId: "task1",
   },
-]
+];
 
 // Sample comments
 const sampleComments: Comment[] = [
   {
     id: "comment1",
-    content: "I've started working on the authentication implementation. Will update once the basic flow is ready.",
+    content:
+      "I've started working on the authentication implementation. Will update once the basic flow is ready.",
     timestamp: "2023-06-17T09:30:00Z",
     user: users[1],
     taskId: "task2",
@@ -241,7 +251,8 @@ const sampleComments: Comment[] = [
   },
   {
     id: "comment2",
-    content: "The initial wireframes for the dashboard are ready. Please review and provide feedback.",
+    content:
+      "The initial wireframes for the dashboard are ready. Please review and provide feedback.",
     timestamp: "2023-06-16T14:45:00Z",
     user: users[2],
     taskId: "task1",
@@ -249,13 +260,14 @@ const sampleComments: Comment[] = [
   },
   {
     id: "comment3",
-    content: "I've identified some potential performance bottlenecks. We should discuss optimization strategies.",
+    content:
+      "I've identified some potential performance bottlenecks. We should discuss optimization strategies.",
     timestamp: "2023-06-18T11:20:00Z",
     user: users[4],
     taskId: "task4",
     taskTitle: "Performance Testing",
   },
-]
+];
 
 export const projects: Project[] = [
   {
@@ -323,7 +335,7 @@ export const projects: Project[] = [
     events: [],
     comments: [],
   },
-]
+];
 
 // Sample business functions
 export const businessFunctions: BusinessFunction[] = [
@@ -354,26 +366,31 @@ export const businessFunctions: BusinessFunction[] = [
     members: [users[0], users[1], users[4]],
     messages: [],
   },
-]
+];
 
 // Helper functions to get data
-export function getBusinessFunctionById(id: string): BusinessFunction | undefined {
-  return businessFunctions.find((bf) => bf.id === id)
+export function getBusinessFunctionById(
+  id: string
+): BusinessFunction | undefined {
+  return businessFunctions.find((bf) => bf.id === id);
 }
 
 export function getProjectById(id: string): Project | undefined {
-  return projects.find((project) => project.id === id)
+  return projects.find((project) => project.id === id);
 }
 
-export function getProjectsByBusinessFunctionId(businessFunctionId: string): Project[] {
-  return projects.filter((project) => project.businessFunctionId === businessFunctionId)
+export function getProjectsByBusinessFunctionId(
+  businessFunctionId: string
+): Project[] {
+  return projects.filter(
+    (project) => project.businessFunctionId === businessFunctionId
+  );
 }
 
 export function getTaskById(id: string): Task | undefined {
-  return sampleTasks.find((task) => task.id === id)
+  return sampleTasks.find((task) => task.id === id);
 }
 
 export function getUserById(id: string): User | undefined {
-  return users.find((user) => user.id === id)
+  return users.find((user) => user.id === id);
 }
-
