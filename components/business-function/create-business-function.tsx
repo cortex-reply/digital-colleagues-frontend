@@ -26,6 +26,7 @@ import { Squad } from "@/payload-types";
 import { getSquads } from "@/actions/squads";
 import { useBusinessFunctionContext } from "@/providers/bussiness-function";
 import { useRouter } from "next/navigation";
+import RichTextEditor, { Wrapper } from "../rich-text";
 
 interface CreateBusinessFunctionProps {
   onComplete?: () => void;
@@ -36,7 +37,7 @@ export function CreateBusinessFunction({
 }: CreateBusinessFunctionProps) {
   const [state, formAction] = useActionState(createBusinessFunction, {} as any);
   const [squads, setSquads] = useState<Squad[]>([]);
-  const router = useRouter();
+  const [waysOfWorking, setWaysOfWorking] = useState<any>();
 
   const { refetch } = useBusinessFunctionContext();
 
@@ -56,13 +57,18 @@ export function CreateBusinessFunction({
     }
   }, [state]);
 
+  const handleSubmit = (formData: FormData) => {
+    formData.set("waysOfWorking", JSON.stringify(waysOfWorking));
+    formAction(formData);
+  };
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Create New Business Function</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
+        <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" required />
@@ -73,12 +79,19 @@ export function CreateBusinessFunction({
           </div>
           <div className="space-y-2">
             <Label htmlFor="waysOfWorking">Ways of Working</Label>
-            <Textarea
+            <Wrapper>
+              <RichTextEditor
+                name={"waysOfWorking"}
+                value={waysOfWorking}
+                setValue={setWaysOfWorking}
+              />
+            </Wrapper>
+            {/* <Textarea
               id="waysOfWorking"
               name="waysOfWorking"
               placeholder="This will be replaced with a rich text editor later"
               rows={6}
-            />
+            /> */}
           </div>
           <div className="space-y-2">
             <Label htmlFor="squad">Squad</Label>

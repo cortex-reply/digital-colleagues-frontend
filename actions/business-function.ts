@@ -9,7 +9,7 @@ const CreateBusinessFunctionSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required." }),
   description: z.string().optional(),
   squad: z.coerce.number(),
-  // waysOfWorking: z.string(),
+  waysOfWorking: z.any(),
 });
 
 // CREATE
@@ -21,6 +21,9 @@ export async function createBusinessFunction(
   const formEntry = Object.fromEntries(formData);
   const { success, data, error } =
     CreateBusinessFunctionSchema.safeParse(formEntry);
+
+  console.log("error", error);
+  console.log("data", data);
 
   if (!success) {
     return {
