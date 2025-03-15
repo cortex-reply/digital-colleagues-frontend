@@ -1,3 +1,4 @@
+import { getId } from "@/lib/utils";
 import { websocket } from "@/services";
 import { CollectionAfterChangeHook } from "payload";
 
@@ -8,7 +9,9 @@ export const broadcastTaskChange: CollectionAfterChangeHook = async ({
 }) => {
   const io = websocket.getIO();
 
-  io?.emit(`tasks`, {
+  const projectId = getId(doc.project);
+
+  io?.emit(`project/${projectId}/task`, {
     operation,
     doc,
   });

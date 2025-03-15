@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
-import { broadcastTaskChange } from "./hooks/after-change";
+import { broadcastTaskChange } from "./hooks/broadcast-task-change";
+import { broadcastTaskDelete } from "./hooks/broadcast-task-delete";
 
 export const Tasks: CollectionConfig = {
   slug: "tasks",
@@ -11,6 +12,7 @@ export const Tasks: CollectionConfig = {
   },
   hooks: {
     afterChange: [broadcastTaskChange],
+    afterDelete: [broadcastTaskDelete],
   },
   fields: [
     {

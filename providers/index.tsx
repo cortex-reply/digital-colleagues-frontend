@@ -5,6 +5,7 @@ import ThemeProvider from "./theme";
 import { BusinessFunctionContextProvider } from "./bussiness-function";
 import { ProjectContextProvider } from "./projects";
 import { SocketProvider } from "./socket";
+import { EpicContextProvider } from "./epics";
 
 const Providers: React.FC<PropsWithChildren> = ({ children }) => {
   return (
@@ -16,7 +17,9 @@ const Providers: React.FC<PropsWithChildren> = ({ children }) => {
     >
       <SocketProvider>
         <BusinessFunctionContextProvider>
-          <ProjectContextProvider>{children}</ProjectContextProvider>
+          <ProjectContextProvider>
+            <EpicContextProvider>{children}</EpicContextProvider>
+          </ProjectContextProvider>
         </BusinessFunctionContextProvider>
       </SocketProvider>
     </ThemeProvider>

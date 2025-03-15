@@ -40,16 +40,16 @@ import { users } from "@/lib/data"; // Import users from your data file
 import { createTask, getProjectTasks } from "@/actions/tasks";
 import { createEpic, getProjectEpics } from "@/actions/epics";
 import { Epic } from "@/payload-types";
-import { useWebSocket } from "@/hooks/use-socket";
-import { WSMessage } from "@/hooks/use-socket/types";
 import { useSocket } from "@/providers/socket";
+import { useEpicContext } from "@/providers/epics";
 
 export function ProjectView({ project: initialProject }: { project: Project }) {
   const [project, setProject] = useState(initialProject);
   const [open, setOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [epics, setEpics] = useState<Epic[]>([]);
+  // const [epics, setEpics] = useState<Epic[]>([]);
   const [type, setType] = useState<"epic" | "task">("task");
+  const { epics } = useEpicContext();
 
   const [taskState, taskFormAction] = useActionState(createTask, {} as any);
   const [epicState, epicFormAction] = useActionState(createEpic, {} as any);
@@ -57,20 +57,29 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
   const { socket } = useSocket();
 
   useEffect(() => {
-    socket?.on(`tasks`, (message) => {
-      if (message.operation === "update") {
-        setProject((prev) => {
-          if (!prev) return;
-          const mappedTasks = prev?.tasks.map((el) => {
+    socket?.on(`project/${project.id}/task`, (message) => {
+      setProject((prev) => {
+        let mappedTasks: Task[] = [];
+        if (message.operation === "update") {
+          mappedTasks = prev?.tasks.map((el) => {
             if (el?.id !== message.doc?.id) return el;
             return message.doc;
           });
 
           return { ...prev, tasks: mappedTasks };
-        });
-      }
+        } else if (message.operation === "delete") {
+          mappedTasks = prev.tasks.filter((el) => el.id !== message.doc?.id);
+        } else if (message) {
+          mappedTasks = [...prev.tasks, message.doc];
+        }
+        return { ...prev, tasks: mappedTasks };
+      });
     });
-  });
+
+    return () => {
+      socket?.off(`project/${project.id}/task`);
+    };
+  }, [socket, project]);
 
   const getTasks = useCallback(async (functionId: string) => {
     const res = await getProjectTasks(functionId);
@@ -83,14 +92,14 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
     });
   }, []);
 
-  const getEpics = useCallback(async () => {
-    const res = await getProjectEpics(project.id.toString());
-    if (res.epics) setEpics(res.epics);
-  }, [project.id]);
+  // const getEpics = useCallback(async () => {
+  //   const res = await getProjectEpics(project.id.toString());
+  //   if (res.epics) setEpics(res.epics);
+  // }, [project.id]);
 
-  useEffect(() => {
-    getEpics();
-  }, []);
+  // useEffect(() => {
+  //   getEpics();
+  // }, []);
 
   const handleTaskUpdate = (updatedTask: Task) => {
     setProject((prev) => ({
@@ -121,14 +130,14 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
     }
   }, [taskState, project.id]);
 
-  useEffect(() => {
-    if (epicState && epicState.status === "success") {
-      setOpen(false);
-      setEpics((prev) => {
-        return [...prev, epicState.epic];
-      });
-    }
-  }, [epicState, project.id]);
+  // useEffect(() => {
+  //   if (epicState && epicState.status === "success") {
+  //     setOpen(false);
+  //     setEpics((prev) => {
+  //       return [...prev, epicState.epic];
+  //     });
+  //   }
+  // }, [epicState, project.id]);
 
   return (
     <div className="space-y-8">
@@ -208,7 +217,7 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                           <SelectValue placeholder="Select Epic" />
                         </SelectTrigger>
                         <SelectContent>
-                          {epics.map((el) => {
+                          {epics?.map((el) => {
                             return (
                               <SelectItem value={el.id.toString()}>
                                 {el.name}

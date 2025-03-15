@@ -1,13 +1,11 @@
 "use client";
 
 import { getProjectsByBusinessFunctionId } from "@/actions/projects";
-import { Function } from "@/payload-types";
+import { Function, Project } from "@/payload-types";
 import { useParams } from "next/navigation";
 import React, {
   createContext,
-  Dispatch,
   PropsWithChildren,
-  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -15,7 +13,7 @@ import React, {
 } from "react";
 
 export type ProjectContextType = {
-  projects: Function[];
+  projects: Project[];
   functionId: number | null;
   // setFunctionId: Dispatch<SetStateAction<number | null>>;
   refetch: () => void;
@@ -27,7 +25,7 @@ export const ProjectContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const [functionId, setFunctionId] = useState<number | null>(null);
-  const [projects, setProjects] = useState<Function[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const params = useParams();
   const paramFunctionId = params.id;
 
