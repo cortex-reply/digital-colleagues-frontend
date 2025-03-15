@@ -1,6 +1,9 @@
 "use client";
 
-import { getBusinessFunctions } from "@/actions/business-function";
+import {
+  getBusinessFunctionById,
+  getBusinessFunctions,
+} from "@/actions/business-function";
 import { Function } from "@/payload-types";
 import React, {
   createContext,
@@ -17,6 +20,7 @@ export type BusinessFunctionContextType = {
   businessFunctions: Function[];
   // setBusinessFunctions: Dispatch<SetStateAction<Function[]>>;
   refetch: () => void | Promise<void>;
+  updateBusinessFunction: (id: number, data?: Partial<Function>) => void;
 };
 
 const Context = createContext({} as BusinessFunctionContextType);
@@ -31,6 +35,37 @@ export const BusinessFunctionContextProvider: React.FC<PropsWithChildren> = ({
     setBusinessFunctions(functions.docs);
   }, []);
 
+  const updateBusinessFunction = useCallback(
+    async (id: number, data?: Partial<Function>) => {
+      if (data) {
+        setBusinessFunctions((prev) => {
+          const copy = [...prev].map((el) => {
+            if (el.id !== id) return el;
+            return {
+              ...el,
+              ...data,
+            };
+          });
+
+          return copy;
+        });
+      } else {
+        const res = await getBusinessFunctionById(id.toString());
+        if (res.function) {
+          setBusinessFunctions((prev) => {
+            const copy = [...prev].map((el) => {
+              if (el.id !== id) return el;
+              return res.function;
+            });
+
+            return copy;
+          });
+        }
+      }
+    },
+    []
+  );
+
   const refetch = useCallback(() => {
     fetchBusinessFunctions();
   }, []);
@@ -40,7 +75,9 @@ export const BusinessFunctionContextProvider: React.FC<PropsWithChildren> = ({
   }, []);
 
   return (
-    <Context.Provider value={{ businessFunctions, refetch }}>
+    <Context.Provider
+      value={{ businessFunctions, refetch, updateBusinessFunction }}
+    >
       {children}
     </Context.Provider>
   );

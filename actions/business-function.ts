@@ -22,9 +22,6 @@ export async function createBusinessFunction(
   const { success, data, error } =
     CreateBusinessFunctionSchema.safeParse(formEntry);
 
-  console.log("error", error);
-  console.log("data", data);
-
   if (!success) {
     return {
       errors: {},
@@ -84,6 +81,7 @@ export async function getBusinessFunctionById(id: string) {
         equals: id,
       },
     },
+    depth: 3,
   });
 
   if (docs && docs.length > 0) {

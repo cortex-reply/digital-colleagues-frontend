@@ -1,3 +1,9 @@
+import { getColleagues } from "@/actions/colleagues";
+import {
+  addSquadMember,
+  getSquadById,
+  removeSquadMember,
+} from "@/actions/squads";
 import { SquadMembersList } from "@/components/squad/squad-members-list";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,9 +29,65 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getId } from "@/lib/utils";
+import { Colleague, Function } from "@/payload-types";
+import { useBusinessFunctionContext } from "@/providers/bussiness-function";
 import { Plus } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
-const BusinessFunctionSquad = () => {
+interface BusinessFunctionSquadProps {
+  businessFunction: Function;
+}
+
+const BusinessFunctionSquad: React.FC<BusinessFunctionSquadProps> = ({
+  businessFunction,
+}) => {
+  const [colleagues, setColleagues] = useState<Colleague[]>([]);
+  const { updateBusinessFunction } = useBusinessFunctionContext();
+
+  const fetchColleagues = useCallback(async () => {
+    const res = await getColleagues();
+    setColleagues(res.colleagues);
+  }, []);
+
+  useEffect(() => {
+    fetchColleagues();
+  }, []);
+
+  const members =
+    typeof businessFunction?.squad !== "number"
+      ? businessFunction.squad?.colleagues
+      : [];
+
+  const removeMember = useCallback(
+    async (colleagueId: string) => {
+      if (!businessFunction.squad) return;
+      const res = await removeSquadMember(
+        getId(businessFunction.squad).toString(),
+        colleagueId
+      );
+      updateBusinessFunction(businessFunction.id);
+    },
+    [businessFunction]
+  );
+
+  const handleAddColleague = useCallback(
+    async (colleagueId: string) => {
+      if (!businessFunction.squad) return;
+      const res = await addSquadMember(
+        getId(businessFunction.squad).toString(),
+        colleagueId
+      );
+
+      const currSquad =
+        typeof businessFunction.squad !== "number"
+          ? businessFunction.squad
+          : (await getSquadById(businessFunction.squad)).squad;
+      updateBusinessFunction(businessFunction.id);
+    },
+    [businessFunction]
+  );
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -49,26 +111,30 @@ const BusinessFunctionSquad = () => {
                 Select a colleague to add to this business function squad.
               </DialogDescription>
             </DialogHeader>
-            {/* <Select onValueChange={(value) => handleAddColleague(value)}>
+            <Select onValueChange={(value) => handleAddColleague(value)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a colleague" />
               </SelectTrigger>
               <SelectContent>
-                {availableColleagues.map((colleague) => (
-                  <SelectItem key={colleague.id} value={colleague.id}>
-                    {colleague.name}
-                  </SelectItem>
-                ))}
+                {colleagues
+                  .filter((el) => {
+                    return !members?.map((el) => el.id).includes(el.id);
+                  })
+                  .map((colleague) => (
+                    <SelectItem
+                      key={colleague.id}
+                      value={colleague.id.toString()}
+                    >
+                      {colleague.human.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
-            </Select> */}
+            </Select>
           </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent>
-        {/* <SquadMembersList
-          members={businessFunction.members}
-          onRemoveMember={handleRemoveColleague}
-        /> */}
+        <SquadMembersList members={members} onRemoveMember={removeMember} />
       </CardContent>
       <CardFooter>
         <p className="text-sm text-muted-foreground">

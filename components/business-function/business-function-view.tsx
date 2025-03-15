@@ -161,7 +161,7 @@ export function BusinessFunctionView({
           <BusinessFunctionChat />
         </TabsContent>
         <TabsContent value="squad">
-          <BusinessFunctionSquad />
+          <BusinessFunctionSquad businessFunction={businessFunction} />
         </TabsContent>
         <TabsContent value="search">
           <SearchInterface />

@@ -5,19 +5,19 @@ All the work should mainly be around the front-end of the application
 
 1. Business Functions
 CRUD operations for business functions. - functions created and CR implemented in the front end - done integrating C and R
-waysOfworking should be a RichText component (from Payload CMS 3) - In progress
-add/remove colleagues ( only human colleagues ) from the function Squad - In progress
+waysOfworking should be a RichText component (from Payload CMS 3) - done
+add/remove colleagues ( only human colleagues ) from the function Squad - done
 
 2. Projects
-CRUD operations - functions created and CRUD implemented in the front end - C done. R correctly shown based on function, U done (i guess can add tasks)
+CRUD operations - functions created and CRUD implemented in the front end - C done. R correctly shown based on function, U done 
 
 3. Tasks:
 CRUD operations - functions created and ALL implemented in the front end - C done R done. 
-should update in real time across sessions (i.e. websockets)
+should update in real time across sessions (i.e. websockets) - in progress
 
 4. Epics:
 CRUD operations - functions created and ALL implemented in the front end
-should update in real time across sessions (i.e. websockets)
+should update in real time across sessions (i.e. websockets) - in progress
 
 Technical Requirements.
 use the provided example repo. it has a payload instance and a demo front end. these need to be integrated.
