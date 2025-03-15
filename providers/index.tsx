@@ -4,6 +4,7 @@ import { PropsWithChildren } from "react";
 import ThemeProvider from "./theme";
 import { BusinessFunctionContextProvider } from "./bussiness-function";
 import { ProjectContextProvider } from "./projects";
+import { SocketProvider } from "./socket";
 
 const Providers: React.FC<PropsWithChildren> = ({ children }) => {
   return (
@@ -13,9 +14,11 @@ const Providers: React.FC<PropsWithChildren> = ({ children }) => {
       enableSystem
       disableTransitionOnChange
     >
-      <BusinessFunctionContextProvider>
-        <ProjectContextProvider>{children}</ProjectContextProvider>
-      </BusinessFunctionContextProvider>
+      <SocketProvider>
+        <BusinessFunctionContextProvider>
+          <ProjectContextProvider>{children}</ProjectContextProvider>
+        </BusinessFunctionContextProvider>
+      </SocketProvider>
     </ThemeProvider>
   );
 };

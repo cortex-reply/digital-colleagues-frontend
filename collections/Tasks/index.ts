@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { broadcastTaskChange } from "./hooks/after-change";
 
 export const Tasks: CollectionConfig = {
   slug: "tasks",
@@ -7,6 +8,9 @@ export const Tasks: CollectionConfig = {
   },
   admin: {
     useAsTitle: "name",
+  },
+  hooks: {
+    afterChange: [broadcastTaskChange],
   },
   fields: [
     {

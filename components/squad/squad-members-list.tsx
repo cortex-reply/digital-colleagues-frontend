@@ -25,7 +25,6 @@ export function SquadMembersList({
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {members?.map((member) => {
         const isAI = member.colleagueType === "digital";
-        console.log("memeber", member);
         return (
           <Card
             key={member.id}

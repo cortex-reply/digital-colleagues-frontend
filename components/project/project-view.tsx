@@ -40,6 +40,9 @@ import { users } from "@/lib/data"; // Import users from your data file
 import { createTask, getProjectTasks } from "@/actions/tasks";
 import { createEpic, getProjectEpics } from "@/actions/epics";
 import { Epic } from "@/payload-types";
+import { useWebSocket } from "@/hooks/use-socket";
+import { WSMessage } from "@/hooks/use-socket/types";
+import { useSocket } from "@/providers/socket";
 
 export function ProjectView({ project: initialProject }: { project: Project }) {
   const [project, setProject] = useState(initialProject);
@@ -50,6 +53,24 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
 
   const [taskState, taskFormAction] = useActionState(createTask, {} as any);
   const [epicState, epicFormAction] = useActionState(createEpic, {} as any);
+
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    socket?.on(`tasks`, (message) => {
+      if (message.operation === "update") {
+        setProject((prev) => {
+          if (!prev) return;
+          const mappedTasks = prev?.tasks.map((el) => {
+            if (el?.id !== message.doc?.id) return el;
+            return message.doc;
+          });
+
+          return { ...prev, tasks: mappedTasks };
+        });
+      }
+    });
+  });
 
   const getTasks = useCallback(async (functionId: string) => {
     const res = await getProjectTasks(functionId);

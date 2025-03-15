@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next build && next start",
     "generate:importmap": "payload generate:importmap",
     "generate:types": "payload generate:types",
     "ii": "pnpm --ignore-workspace install",
@@ -89,6 +89,8 @@
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.0",
     "sharp": "^0.33.5",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "sonner": "^1.7.1",
     "storybook": "latest",
     "tailwind-merge": "^2.5.5",
@@ -96,12 +98,14 @@
     "typescript": "latest",
     "vaul": "^0.9.6",
     "webpack": "latest",
+    "ws": "^8.18.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/ws": "^8.18.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
