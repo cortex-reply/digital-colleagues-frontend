@@ -21,7 +21,8 @@ export async function createProject(prevState: any, formData: FormData) {
 
   if (!success) {
     return {
-      errors: {},
+      errors: error.flatten().fieldErrors,
+      data: formEntry,
     };
   }
 

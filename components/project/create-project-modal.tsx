@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,12 @@ import { Upload } from "lucide-react";
 import { createProject } from "@/actions/projects";
 import { useProjectContext } from "@/providers/projects";
 import { useBusinessFunctionContext } from "@/providers/bussiness-function";
+import useFormErrors from "@/hooks/useFormError";
+import FormMessage from "../form/message";
+import { cn } from "@/lib/utils";
+
+const fields = ["name", "description", "workInstructions"];
+type FieldValues = (typeof fields)[number];
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -29,11 +35,16 @@ export function CreateProjectModal({
 }: CreateProjectModalProps) {
   const [open, setOpen] = useState(isOpen);
   const [file, setFile] = useState<File | null>(null);
-  const [state, formAction, status] = useActionState(createProject, {
+  const [state, formAction] = useActionState(createProject, {
     status: "",
   } as any);
   const { refetch, functionId } = useProjectContext();
   const { refetch: refetchFunctions } = useBusinessFunctionContext();
+  const { setError, getFieldErrors, clearAllErrors, fieldHasErrors } =
+    useFormErrors<FieldValues>(fields);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const workInstructionsInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setOpen(isOpen);
@@ -44,10 +55,28 @@ export function CreateProjectModal({
   }, [open]);
 
   useEffect(() => {
+    console.log("state", state);
     if (state && state.status === "success") {
       setOpen(false);
       refetch();
       refetchFunctions();
+    } else if (state.errors) {
+      const keys = Object.keys(state.errors).filter((el) =>
+        fields.includes(el)
+      );
+
+      clearAllErrors();
+
+      for (const key of keys) {
+        setError(key, state.errors[key]);
+      }
+
+      if (state.data?.description && descriptionInputRef.current)
+        descriptionInputRef.current.value = state.data.description;
+      if (state.data?.name && nameInputRef.current)
+        nameInputRef.current.value = state.data.name;
+      if (state.data?.workInstructions && workInstructionsInputRef.current)
+        workInstructionsInputRef.current.value = state.data.workInstructions;
     }
   }, [state]);
 
@@ -63,35 +92,84 @@ export function CreateProjectModal({
           <DialogHeader>
             <DialogTitle>Create Project</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="space-y-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+              <Label
+                htmlFor="name"
+                className={cn(
+                  "text-right",
+                  fieldHasErrors("name") && "text-red-500"
+                )}
+              >
                 Name
               </Label>
-              <Input id="name" name="name" className="col-span-3" />
+              <div className="flex flex-col col-span-3">
+                <Input
+                  id="name"
+                  name="name"
+                  className={cn(
+                    "flex-1",
+                    fieldHasErrors("name") && "border-red-500"
+                  )}
+                  ref={nameInputRef}
+                />
+                {fieldHasErrors("name") && (
+                  <FormMessage message={getFieldErrors("name")[0]} />
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right pt-2">
+              <Label
+                htmlFor="description"
+                className={cn(
+                  "text-right pt-2",
+                  fieldHasErrors("description") && "text-red-500"
+                )}
+              >
                 Description
               </Label>
-              <Textarea
-                id="description"
-                className="col-span-3"
-                rows={3}
-                name="description"
-              />
+              <div className="flex flex-col col-span-3">
+                <Textarea
+                  id="description"
+                  className={cn(
+                    fieldHasErrors("description") && "border-red-500"
+                  )}
+                  rows={3}
+                  name="description"
+                  ref={descriptionInputRef}
+                />
+                {fieldHasErrors("description") && (
+                  <FormMessage message={getFieldErrors("description")[0]} />
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="workInstructions" className="text-right pt-2">
+              <Label
+                htmlFor="workInstructions"
+                className={cn(
+                  "text-right pt-2",
+                  fieldHasErrors("workInstructions") && "text-red-500"
+                )}
+              >
                 Work Instructions
               </Label>
-              <Textarea
-                id="workInstructions"
-                name="workInstructions"
-                className="col-span-3"
-                rows={4}
-                placeholder="Enter work instructions here"
-              />
+              <div className="flex flex-col col-span-3">
+                <Textarea
+                  id="workInstructions"
+                  name="workInstructions"
+                  rows={4}
+                  className={cn(
+                    fieldHasErrors("workInstructions") && "border-red-500"
+                  )}
+                  placeholder="Enter work instructions here"
+                  ref={workInstructionsInputRef}
+                />
+                {fieldHasErrors("workInstructions") && (
+                  <FormMessage
+                    message={getFieldErrors("workInstructions")[0]}
+                  />
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="file" className="text-right">
