@@ -7,7 +7,8 @@ export default async function ProjectPage({
 }: {
   params: { id: string; projectId: string };
 }) {
-  const { project } = await getProjectById(params.projectId);
+  const par = await params;
+  const { project } = await getProjectById(par.projectId);
 
   if (!project) {
     return <div>Project not found</div>;

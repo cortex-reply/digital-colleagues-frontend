@@ -219,7 +219,7 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                         <SelectContent>
                           {epics?.map((el) => {
                             return (
-                              <SelectItem value={el.id.toString()}>
+                              <SelectItem key={el.id} value={el.id.toString()}>
                                 {el.name}
                               </SelectItem>
                             );
