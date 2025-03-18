@@ -55,7 +55,6 @@ export function CreateProjectModal({
   }, [open]);
 
   useEffect(() => {
-    console.log("state", state);
     if (state && state.status === "success") {
       setOpen(false);
       refetch();
@@ -96,10 +95,8 @@ export function CreateProjectModal({
             <div className="grid grid-cols-4 items-center gap-4">
               <Label
                 htmlFor="name"
-                className={cn(
-                  "text-right",
-                  fieldHasErrors("name") && "text-red-500"
-                )}
+                className={cn("text-right")}
+                variant={fieldHasErrors("name") ? "error" : "default"}
               >
                 Name
               </Label>
@@ -107,10 +104,8 @@ export function CreateProjectModal({
                 <Input
                   id="name"
                   name="name"
-                  className={cn(
-                    "flex-1",
-                    fieldHasErrors("name") && "border-red-500"
-                  )}
+                  className={cn("flex-1")}
+                  hasError={fieldHasErrors("name")}
                   ref={nameInputRef}
                 />
                 {fieldHasErrors("name") && (
@@ -121,19 +116,15 @@ export function CreateProjectModal({
             <div className="grid grid-cols-4 items-start gap-4">
               <Label
                 htmlFor="description"
-                className={cn(
-                  "text-right pt-2",
-                  fieldHasErrors("description") && "text-red-500"
-                )}
+                className={cn("text-right pt-2")}
+                variant={fieldHasErrors("description") ? "error" : "default"}
               >
                 Description
               </Label>
               <div className="flex flex-col col-span-3">
                 <Textarea
                   id="description"
-                  className={cn(
-                    fieldHasErrors("description") && "border-red-500"
-                  )}
+                  hasError={fieldHasErrors("description")}
                   rows={3}
                   name="description"
                   ref={descriptionInputRef}
@@ -146,10 +137,10 @@ export function CreateProjectModal({
             <div className="grid grid-cols-4 items-start gap-4">
               <Label
                 htmlFor="workInstructions"
-                className={cn(
-                  "text-right pt-2",
-                  fieldHasErrors("workInstructions") && "text-red-500"
-                )}
+                className={cn("text-right pt-2")}
+                variant={
+                  fieldHasErrors("workInstructions") ? "error" : "default"
+                }
               >
                 Work Instructions
               </Label>
@@ -158,9 +149,7 @@ export function CreateProjectModal({
                   id="workInstructions"
                   name="workInstructions"
                   rows={4}
-                  className={cn(
-                    fieldHasErrors("workInstructions") && "border-red-500"
-                  )}
+                  hasError={fieldHasErrors("workInstructions")}
                   placeholder="Enter work instructions here"
                   ref={workInstructionsInputRef}
                 />

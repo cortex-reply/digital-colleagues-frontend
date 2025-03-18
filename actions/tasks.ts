@@ -8,7 +8,9 @@ import { Task } from "@/payload-types";
 const createTaskSchema = z.object({
   name: z.string().trim().min(1, { message: "Title is required." }),
   description: z.string().optional(),
-  status: z.enum(["backlog", "todo", "inProgress", "done", "cancelled"]),
+  status: z.enum(["backlog", "todo", "inProgress", "done", "cancelled"], {
+    message: "Invalid value",
+  }),
   projectId: z.string(),
   epic: z.string(),
 });
@@ -21,11 +23,30 @@ export async function createTask(prevState: any, formData: FormData) {
 
   if (!success) {
     return {
-      errors: {},
+      errors: error.flatten().fieldErrors,
+      data: formEntry,
     };
   }
 
   const payload = await getPayload({ config });
+
+  const { totalDocs: epicCount } = await payload.count({
+    collection: "epics",
+    where: {
+      id: {
+        equals: data.epic,
+      },
+    },
+  });
+
+  if (epicCount === 0) {
+    return {
+      errors: {
+        epic: ["Epic is required"],
+      },
+      data: formEntry,
+    };
+  }
 
   try {
     // getting the last index for the current status

@@ -18,7 +18,8 @@ export async function createEpic(prevState: any, formData: FormData) {
 
   if (!success) {
     return {
-      errors: {},
+      errors: error.flatten().fieldErrors,
+      data: formEntry,
     };
   }
 
