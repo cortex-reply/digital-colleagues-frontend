@@ -72,6 +72,13 @@ export const Tasks: CollectionConfig = {
       type: "date",
     },
     {
+      name: "index",
+      type: "number",
+      required: true,
+      // unique: true,
+      defaultValue: 0,
+    },
+    {
       name: "comments",
       type: "array",
       fields: [

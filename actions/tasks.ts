@@ -1,6 +1,6 @@
 "use server";
 
-import { getPayload } from "payload";
+import { BasePayload, getPayload } from "payload";
 import config from "@/payload.config";
 import { z } from "zod";
 import { Task } from "@/payload-types";
@@ -28,6 +28,21 @@ export async function createTask(prevState: any, formData: FormData) {
   const payload = await getPayload({ config });
 
   try {
+    // getting the last index for the current status
+    const {
+      docs: [{ index: lastIndex }],
+    } = await payload.find({
+      collection: "tasks",
+      where: {
+        status: {
+          equals: data.status,
+        },
+      },
+      sort: ["-index"],
+      limit: 1,
+      depth: 0,
+    });
+
     const newTask = await payload.create({
       collection: "tasks",
       data: {
@@ -35,6 +50,7 @@ export async function createTask(prevState: any, formData: FormData) {
         project: parseInt(data.projectId),
         epic: parseInt(data.epic),
         dateLogged: new Date().toString(),
+        index: (lastIndex || 0) + 1,
       },
     });
     return { status: "success", task: newTask };
@@ -43,8 +59,102 @@ export async function createTask(prevState: any, formData: FormData) {
   }
 }
 
-export async function updateTaskStatus(status: Task["status"], taskId: number) {
+async function updateIndex(
+  payload: BasePayload,
+  prevIndex: number,
+  index: number,
+  status: Task["status"]
+) {
+  // we have to get the items before updating the list
+  // if the item moved up we add the index of each item that comes after it
+  if (prevIndex > index) {
+    const { docs } = await payload.find({
+      collection: "tasks",
+      where: {
+        and: [
+          {
+            index: {
+              greater_than_equal: index,
+            },
+          },
+          {
+            index: {
+              not_equals: prevIndex,
+            },
+          },
+          {
+            status: {
+              equals: status,
+            },
+          },
+        ],
+      },
+    });
+
+    for (const { id, index: currIdx } of docs) {
+      await payload.update({
+        collection: "tasks",
+        where: {
+          id: {
+            equals: id,
+          },
+        },
+        data: {
+          index: typeof currIdx === "number" ? currIdx + 1 : 0,
+        },
+      });
+    }
+  }
+
+  // if the item moved down we add the index of each item that comes before it
+  if (prevIndex < index) {
+    const { docs } = await payload.find({
+      collection: "tasks",
+      where: {
+        and: [
+          {
+            index: {
+              less_than_equal: index,
+            },
+          },
+          {
+            index: {
+              not_equals: prevIndex,
+            },
+          },
+          {
+            status: {
+              equals: status,
+            },
+          },
+        ],
+      },
+    });
+    for (const { id, index: currIdx } of docs) {
+      await payload.update({
+        collection: "tasks",
+        where: {
+          id: {
+            equals: id,
+          },
+        },
+        data: {
+          index: typeof currIdx === "number" ? currIdx - 1 : 0,
+        },
+      });
+    }
+  }
+}
+
+export async function updateTaskStatus(
+  status: Task["status"],
+  prevIndex: number,
+  index: number,
+  taskId: number
+) {
   const payload = await getPayload({ config });
+
+  await updateIndex(payload, prevIndex, index, status);
 
   const { docs, errors } = await payload.update({
     collection: "tasks",
@@ -55,6 +165,7 @@ export async function updateTaskStatus(status: Task["status"], taskId: number) {
     },
     data: {
       status,
+      index,
     },
   });
 

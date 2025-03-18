@@ -319,6 +319,7 @@ export interface Task {
   parents?: (number | Task)[] | null;
   dateLogged: string;
   closureDate?: string | null;
+  index: number;
   comments?:
     | {
         text: string;
@@ -514,6 +515,7 @@ export interface TasksSelect<T extends boolean = true> {
   parents?: T;
   dateLogged?: T;
   closureDate?: T;
+  index?: T;
   comments?:
     | T
     | {

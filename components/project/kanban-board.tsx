@@ -29,9 +29,7 @@ export function KanbanBoard({
   tasks,
   onTaskClick,
 }: KanbanBoardProps) {
-  const [taskList, setTaskList] =
-    useState<(Task & { index?: number })[]>(tasks);
-  // const [epics, setEpics] = useState<Epic[]>([]);
+  const [taskList, setTaskList] = useState<Task[]>(tasks);
   const [filter, setFilter] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,6 +48,14 @@ export function KanbanBoard({
               filter === "all" ||
               (t.epic && getId(t.epic) === filter))
         )
+        .sort((a, b) =>
+          typeof a.index !== "undefined" &&
+          typeof b.index !== "undefined" &&
+          a.index !== null &&
+          b.index !== null
+            ? a.index - b.index
+            : -1
+        )
         .map((t) => t.id),
     },
     todo: {
@@ -63,6 +69,14 @@ export function KanbanBoard({
               filter === "all" ||
               (t.epic && getId(t.epic) === filter))
         )
+        .sort((a, b) =>
+          typeof a.index !== "undefined" &&
+          typeof b.index !== "undefined" &&
+          a.index !== null &&
+          b.index !== null
+            ? a.index - b.index
+            : -1
+        )
         .map((t) => t.id),
     },
     inProgress: {
@@ -75,6 +89,14 @@ export function KanbanBoard({
             (!filter ||
               filter === "all" ||
               (t.epic && getId(t.epic) === filter))
+        )
+        .sort((a, b) =>
+          typeof a.index !== "undefined" &&
+          typeof b.index !== "undefined" &&
+          a.index !== null &&
+          b.index !== null
+            ? a.index - b.index
+            : -1
         )
         .map((t) => t.id),
     },
@@ -98,6 +120,14 @@ export function KanbanBoard({
               filter === "all" ||
               (t.epic && getId(t.epic) === filter))
         )
+        .sort((a, b) =>
+          typeof a.index !== "undefined" &&
+          typeof b.index !== "undefined" &&
+          a.index !== null &&
+          b.index !== null
+            ? a.index - b.index
+            : -1
+        )
         .map((t) => t.id),
     },
   };
@@ -105,8 +135,13 @@ export function KanbanBoard({
   // const epics = taskList.filter((task) => task.type === "epic");
 
   const updateStatus = useCallback(
-    async (status: Task["status"], taskId: number) => {
-      const res = await updateTaskStatus(status, taskId);
+    async (
+      status: Task["status"],
+      prevIndex: number,
+      index: number,
+      taskId: number
+    ) => {
+      const res = await updateTaskStatus(status, prevIndex, index, taskId);
       if (res.errors && res.errors?.length > 0) {
         // setTaskList((prev) => {
         //   const filtered = prev.filter((el) => el.id !== res.task.id);
@@ -123,7 +158,10 @@ export function KanbanBoard({
 
       if (!destination) return;
 
-      if (destination.droppableId === source.droppableId) {
+      if (
+        destination.droppableId === source.droppableId &&
+        destination.index === source.index
+      ) {
         return;
       }
 
@@ -133,13 +171,19 @@ export function KanbanBoard({
           return {
             ...el,
             status: destination.droppableId,
+            index: destination.index,
           };
         });
 
         return [...mapped];
       });
 
-      await updateStatus(destination.droppableId, draggableId);
+      await updateStatus(
+        destination.droppableId,
+        source.index,
+        destination.index,
+        draggableId
+      );
     },
     [taskList]
   );
