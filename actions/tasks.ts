@@ -80,12 +80,14 @@ export async function createTask(prevState: any, formData: FormData) {
   }
 }
 
-async function updateIndex(
-  payload: BasePayload,
+export async function updateTaskIndex(
+  taskId: number,
   prevIndex: number,
   index: number,
   status: Task["status"]
 ) {
+  const payload = await getPayload({ config });
+
   // we have to get the items before updating the list
   // if the item moved up we add the index of each item that comes after it
   if (prevIndex > index) {
@@ -165,19 +167,8 @@ async function updateIndex(
       });
     }
   }
-}
 
-export async function updateTaskStatus(
-  status: Task["status"],
-  prevIndex: number,
-  index: number,
-  taskId: number
-) {
-  const payload = await getPayload({ config });
-
-  await updateIndex(payload, prevIndex, index, status);
-
-  const { docs, errors } = await payload.update({
+  await payload.update({
     collection: "tasks",
     where: {
       id: {
@@ -187,6 +178,27 @@ export async function updateTaskStatus(
     data: {
       status,
       index,
+    },
+  });
+
+  return { status: "success" };
+}
+
+export async function updateTaskInfo(
+  taskId: number,
+  data: Partial<Pick<Task, "name" | "description" | "status" | "closureDate">>
+) {
+  const payload = await getPayload({ config });
+
+  const { docs, errors } = await payload.update({
+    collection: "tasks",
+    where: {
+      id: {
+        equals: taskId,
+      },
+    },
+    data: {
+      ...data,
     },
   });
 

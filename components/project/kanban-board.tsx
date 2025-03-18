@@ -14,7 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Epic, Task } from "@/payload-types";
 import { getId } from "@/lib/utils";
-import { updateTaskStatus } from "@/actions/tasks";
+import { updateTaskInfo } from "@/actions/tasks";
 
 interface KanbanBoardProps {
   epics: Epic[];
@@ -141,7 +141,7 @@ export function KanbanBoard({
       index: number,
       taskId: number
     ) => {
-      const res = await updateTaskStatus(status, prevIndex, index, taskId);
+      const res = await updateTaskInfo(taskId, { status });
       if (res.errors && res.errors?.length > 0) {
         // setTaskList((prev) => {
         //   const filtered = prev.filter((el) => el.id !== res.task.id);

@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -14,10 +20,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, CheckCircle, Link2, Paperclip, Plus } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import {
+  AlertCircle,
+  CalendarIcon,
+  CheckCircle,
+  Link2,
+  Paperclip,
+  Plus,
+} from "lucide-react";
 import type { User, Comment } from "@/lib/types";
 import { Task } from "@/payload-types";
+import { updateTaskInfo } from "@/actions/tasks";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { cn } from "@/lib/utils";
+import { Calendar } from "../ui/calendar";
 
 interface TaskModalProps {
   task: Task;
@@ -46,27 +63,31 @@ export function TaskModal({
     setEditedTask({ ...editedTask, [field]: value });
   };
 
-  const handleUpdate = (field: keyof Task) => {
+  const handleUpdate = async (field: keyof Task) => {
+    const updatableTasks = ["name", "description", "status", "closureDate"];
+    if (updatableTasks.includes(field)) {
+      await updateTaskInfo(task.id, { [field]: editedTask[field] });
+    }
     onUpdate(editedTask);
     setEditingField(null);
   };
 
-  // const handleAddComment = () => {
-  //   if (newComment.trim()) {
-  //     onAddComment({
-  //       content: newComment,
-  //       user: users[0], // Assuming the first user is the current user
-  //       taskId: task.id.toString(),
-  //       taskTitle: task.name || "",
-  //     });
-  //     setNewComment("");
-  //   }
-  // };
+  const handleAddComment = () => {
+    if (newComment.trim()) {
+      // onAddComment({
+      //   content: newComment,
+      //   user: users[0], // Assuming the first user is the current user
+      //   taskId: task.id.toString(),
+      //   taskTitle: task.name || "",
+      // });
+      setNewComment("");
+    }
+  };
 
   const renderField = (
     field: keyof Task,
     label: string,
-    type: "text" | "textarea" | "select",
+    type: "text" | "textarea" | "date" | "select",
     options?: { value: string; label: string }[]
   ) => {
     const isEditing = editingField === field;
@@ -105,11 +126,41 @@ export function TaskModal({
               onChange={(e) => handleInputChange(field, e.target.value)}
               className="flex-1"
             />
+          ) : type === "date" ? (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[240px] justify-start text-left font-normal",
+                    editedTask[field] && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon />
+                  {editedTask[field] ? (
+                    format(editedTask[field] as string, "PPP")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={editedTask[field] as unknown as Date}
+                  onSelect={(e) =>
+                    handleInputChange(field, e?.toLocaleString("en") || "")
+                  }
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           ) : (
             <Input
+              type={type}
               value={editedTask[field] as string}
               onChange={(e) => handleInputChange(field, e.target.value)}
-              className="flex-1"
+              className="flex-1 border"
             />
           )}
           <Button size="sm" onClick={() => handleUpdate(field)}>
@@ -124,9 +175,9 @@ export function TaskModal({
         className="cursor-pointer hover:bg-muted/50 rounded-md p-1 -m-1"
         onClick={() => setEditingField(field)}
       >
-        {typeof editedTask[field] === "string" ||
-          (typeof editedTask[field] === "string" && editedTask[field]) ||
-          "Click to edit"}
+        {typeof editedTask[field] === "string" &&
+          editedTask[field] &&
+          editedTask[field]}
       </div>
     );
   };
@@ -134,7 +185,11 @@ export function TaskModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
-        <div className="flex-1 overflow-auto">
+        <DialogHeader className="hidden">
+          <DialogTitle>{task.name}</DialogTitle>
+          <DialogDescription>{task.description}</DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto px-2">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
             {/* Main Content */}
             <div className="space-y-6">
@@ -232,9 +287,10 @@ export function TaskModal({
                   Status
                 </div>
                 {renderField("status", "Status", "select", [
+                  { value: "backlog", label: "Backlog" },
                   { value: "todo", label: "To Do" },
-                  { value: "in-progress", label: "In Progress" },
-                  { value: "review", label: "Review" },
+                  { value: "inProgress", label: "In Progress" },
+                  // { value: "review", label: "Review" },
                   { value: "done", label: "Done" },
                 ])}
               </div>
@@ -294,7 +350,8 @@ export function TaskModal({
                 <div className="text-sm font-medium text-muted-foreground">
                   Due Date
                 </div>
-                {renderField("closureDate", "Due Date", "text")}
+
+                {renderField("closureDate", "Due Date", "date")}
               </div>
 
               {/* Created/Updated Info */}
