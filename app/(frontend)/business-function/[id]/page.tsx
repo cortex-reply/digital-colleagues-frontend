@@ -22,11 +22,9 @@ export default async function BusinessFunctionPage({
         <BusinessFunctionView
           businessFunction={{
             ...businessFunction.function,
-            waysOfWorking: "null",
-            memberCount: 12,
-            projectCount: 12,
-            members: [],
-            messages: [],
+            // memberCount: 12,
+            // members: [],
+            // messages: [],
           }}
         />
       )}

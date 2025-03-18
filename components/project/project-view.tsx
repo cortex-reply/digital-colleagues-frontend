@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -9,50 +9,24 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { PlusCircle, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
 import { KanbanBoard } from "@/components/project/kanban-board";
 import { CalendarView } from "@/components/project/calendar-view";
-import { EventFeed } from "@/components/project/event-feed";
-import { CommentsFeed } from "@/components/project/comments-feed";
 import { TaskModal } from "@/components/project/task-modal";
-import type { Project, Task, Comment } from "@/lib/types";
 import { users } from "@/lib/data"; // Import users from your data file
-import { createTask, getProjectTasks } from "@/actions/tasks";
-import { createEpic, getProjectEpics } from "@/actions/epics";
-import { Epic } from "@/payload-types";
+import { getProjectTasks } from "@/actions/tasks";
+import { Project, Task } from "@/payload-types";
 import { useSocket } from "@/providers/socket";
 import { useEpicContext } from "@/providers/epics";
+import CreateTaskModal from "./create-task-modal";
 
 export function ProjectView({ project: initialProject }: { project: Project }) {
-  const [project, setProject] = useState(initialProject);
+  const [project, setProject] = useState<Project & { tasks?: Task[] }>(
+    initialProject
+  );
   const [open, setOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  // const [epics, setEpics] = useState<Epic[]>([]);
-  const [type, setType] = useState<"epic" | "task">("task");
-  const { epics } = useEpicContext();
-
-  const [taskState, taskFormAction] = useActionState(createTask, {} as any);
-  const [epicState, epicFormAction] = useActionState(createEpic, {} as any);
+  const { epics, refetch: refetchEpics } = useEpicContext();
 
   const { socket } = useSocket();
 
@@ -61,16 +35,18 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
       setProject((prev) => {
         let mappedTasks: Task[] = [];
         if (message.operation === "update") {
-          mappedTasks = prev?.tasks.map((el) => {
-            if (el?.id !== message.doc?.id) return el;
-            return message.doc;
-          });
+          mappedTasks =
+            prev?.tasks?.map((el) => {
+              if (el?.id !== message.doc?.id) return el;
+              return message.doc;
+            }) || [];
 
           return { ...prev, tasks: mappedTasks };
         } else if (message.operation === "delete") {
-          mappedTasks = prev.tasks.filter((el) => el.id !== message.doc?.id);
+          mappedTasks =
+            prev.tasks?.filter((el) => el.id !== message.doc?.id) || [];
         } else if (message) {
-          mappedTasks = [...prev.tasks, message.doc];
+          mappedTasks = [...(prev.tasks || []), message.doc];
         }
         return { ...prev, tasks: mappedTasks };
       });
@@ -92,52 +68,37 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
     });
   }, []);
 
-  // const getEpics = useCallback(async () => {
-  //   const res = await getProjectEpics(project.id.toString());
-  //   if (res.epics) setEpics(res.epics);
-  // }, [project.id]);
-
-  // useEffect(() => {
-  //   getEpics();
-  // }, []);
-
   const handleTaskUpdate = (updatedTask: Task) => {
     setProject((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((task) =>
+      tasks: prev.tasks?.map((task) =>
         task.id === updatedTask.id ? updatedTask : task
       ),
     }));
     setSelectedTask(null);
   };
 
-  const handleAddComment = (newComment: Omit<Comment, "id" | "timestamp">) => {
-    const comment: Comment = {
-      ...newComment,
-      id: `comment-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-    };
-    setProject((prev) => ({
-      ...prev,
-      comments: [...prev.comments, comment],
-    }));
-  };
+  // const handleAddComment = (newComment: Omit<Comment, "id" | "timestamp">) => {
+  //   const comment: Comment = {
+  //     ...newComment,
+  //     id: `comment-${Date.now()}`,
+  //     timestamp: new Date().toISOString(),
+  //   };
+  //   setProject((prev) => ({
+  //     ...prev,
+  //     comments: [...prev.comments, comment],
+  //   }));
+  // };
 
-  useEffect(() => {
-    if (taskState && taskState.status === "success") {
-      setOpen(false);
-      getTasks(project.id.toString());
-    }
-  }, [taskState, project.id]);
+  const handleTaskCreation = useCallback(() => {
+    setOpen(false);
+    getTasks(project.id.toString());
+  }, [project]);
 
-  // useEffect(() => {
-  //   if (epicState && epicState.status === "success") {
-  //     setOpen(false);
-  //     setEpics((prev) => {
-  //       return [...prev, epicState.epic];
-  //     });
-  //   }
-  // }, [epicState, project.id]);
+  const handleEpicCreation = useCallback(() => {
+    setOpen(false);
+    refetchEpics();
+  }, [project]);
 
   return (
     <div className="space-y-8">
@@ -153,151 +114,13 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
             <p className="text-muted-foreground">{project.description}</p>
           </div>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Create Task
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[525px]">
-            <form action={type === "task" ? taskFormAction : epicFormAction}>
-              <DialogHeader>
-                <DialogTitle>Create Task</DialogTitle>
-                <DialogDescription>
-                  Add a new task to this project
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <input type="hidden" name="projectId" value={project.id} />
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="title" className="text-right">
-                    Title
-                  </Label>
-                  <Input id="title" name="name" className="col-span-3" />
-                </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="description" className="text-right pt-2">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    className="col-span-3"
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="type" className="text-right">
-                    Type
-                  </Label>
-                  <Select
-                    name="type"
-                    value={type}
-                    onValueChange={(value) => setType(value as "epic" | "task")}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="task">Task</SelectItem>
-                      <SelectItem value="epic">Epic</SelectItem>
-                      {/* <SelectItem value="story">Story</SelectItem> */}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {type === "task" && (
-                  <>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="epic" className="text-right">
-                        Epic
-                      </Label>
-                      <Select name="epic">
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select Epic" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {epics?.map((el) => {
-                            return (
-                              <SelectItem key={el.id} value={el.id.toString()}>
-                                {el.name}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="status" className="text-right">
-                        Status
-                      </Label>
-                      <Select name="status">
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="backlog">Backlog</SelectItem>
-                          <SelectItem value="todo">To Do</SelectItem>
-                          <SelectItem value="inProgress">
-                            In Progress
-                          </SelectItem>
-                          <SelectItem value="review">Review</SelectItem>
-                          <SelectItem value="done">Done</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="priority" className="text-right">
-                        Priority
-                      </Label>
-                      <Select name="priority">
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="assignee" className="text-right">
-                        Assignee
-                      </Label>
-                      <Select name="assignee">
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select assignee" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="dueDate" className="text-right">
-                        Due Date
-                      </Label>
-                      <Input
-                        id="dueDate"
-                        name="dueDate"
-                        type="date"
-                        className="col-span-3"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-              <DialogFooter>
-                <Button type="submit">Create {type}</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <CreateTaskModal
+          isOpen={open}
+          onOpenChange={setOpen}
+          project={project}
+          onEpicCreated={handleEpicCreation}
+          onTaskCreated={handleTaskCreation}
+        />
       </div>
 
       <Tabs defaultValue="tasks" className="space-y-4">
@@ -320,7 +143,7 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
               <KanbanBoard
                 epics={epics}
                 projectId={project.id}
-                tasks={project.tasks}
+                tasks={project.tasks || []}
                 onTaskClick={(task) => setSelectedTask(task)}
               />
             </CardContent>
@@ -333,7 +156,7 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
               <CardDescription>View tasks by their due dates</CardDescription>
             </CardHeader>
             <CardContent>
-              <CalendarView tasks={project.tasks} />
+              <CalendarView tasks={project.tasks || []} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -365,9 +188,9 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
               <CardTitle>Event Feed</CardTitle>
               <CardDescription>Recent updates to project tasks</CardDescription>
             </CardHeader>
-            <CardContent>
+            {/* <CardContent>
               <EventFeed events={project.events} />
-            </CardContent>
+            </CardContent> */}
           </Card>
         </TabsContent>
         <TabsContent value="comments">
@@ -378,9 +201,9 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
                 Recent comments on project tasks
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            {/* <CardContent>
               <CommentsFeed comments={project.comments} />
-            </CardContent>
+            </CardContent> */}
           </Card>
         </TabsContent>
       </Tabs>
@@ -389,13 +212,13 @@ export function ProjectView({ project: initialProject }: { project: Project }) {
         <TaskModal
           task={selectedTask}
           users={users}
-          comments={project.comments.filter(
-            (comment) => comment.taskId === selectedTask.id
-          )}
+          // comments={project.comments.filter(
+          //   (comment) => comment.taskId === selectedTask.id
+          // )}
           isOpen={!!selectedTask}
           onClose={() => setSelectedTask(null)}
           onUpdate={handleTaskUpdate}
-          onAddComment={handleAddComment}
+          // onAddComment={handleAddComment}
         />
       )}
     </div>

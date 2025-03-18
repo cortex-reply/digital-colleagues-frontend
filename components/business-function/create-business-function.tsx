@@ -2,7 +2,13 @@
 
 import type React from "react";
 
-import { useActionState, useCallback, useEffect, useState } from "react";
+import {
+  useActionState,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Card,
   CardContent,
@@ -27,10 +33,23 @@ import { getSquads } from "@/actions/squads";
 import { useBusinessFunctionContext } from "@/providers/bussiness-function";
 import { useRouter } from "next/navigation";
 import RichTextEditor, { Wrapper } from "../rich-text";
+import FormMessage from "../form/message";
+import useFormErrors from "@/hooks/useFormError";
+import { cn } from "@/lib/utils";
+
+type ErrorMessageState = {
+  name: string[] | string;
+  description: string[] | string;
+  waysOfWorking: string[] | string;
+  squad: string[] | string;
+};
 
 interface CreateBusinessFunctionProps {
   onComplete?: () => void;
 }
+
+const fields = ["name", "description", "waysOfWorking", "squad"];
+type FieldValues = (typeof fields)[number];
 
 export function CreateBusinessFunction({
   onComplete,
@@ -38,6 +57,13 @@ export function CreateBusinessFunction({
   const [state, formAction] = useActionState(createBusinessFunction, {} as any);
   const [squads, setSquads] = useState<Squad[]>([]);
   const [waysOfWorking, setWaysOfWorking] = useState<any>();
+
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const { setError, getFieldErrors, clearAllErrors, fieldHasErrors } =
+    useFormErrors<FieldValues>(fields);
+  const router = useRouter();
 
   const { refetch } = useBusinessFunctionContext();
 
@@ -53,14 +79,33 @@ export function CreateBusinessFunction({
   useEffect(() => {
     if (state && state.status === "success") {
       refetch();
-      onComplete?.();
+      if (onComplete) onComplete();
+      else router.push("/");
+    } else if (state.errors) {
+      const keys = Object.keys(state.errors).filter((el) =>
+        fields.includes(el)
+      );
+
+      clearAllErrors();
+
+      for (const key of keys) {
+        setError(key, state.errors[key]);
+      }
+
+      if (state.data?.description && descriptionInputRef.current)
+        descriptionInputRef.current.value = state.data.description;
+      if (state.data?.name && nameInputRef.current)
+        nameInputRef.current.value = state.data.name;
     }
   }, [state]);
 
-  const handleSubmit = (formData: FormData) => {
-    formData.set("waysOfWorking", JSON.stringify(waysOfWorking));
-    formAction(formData);
-  };
+  const handleSubmit = useCallback(
+    async (formData: FormData) => {
+      formData.set("waysOfWorking", JSON.stringify(waysOfWorking));
+      formAction(formData);
+    },
+    [waysOfWorking]
+  );
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -70,12 +115,30 @@ export function CreateBusinessFunction({
       <CardContent>
         <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" required />
+            <Label
+              htmlFor="name"
+              className={cn(fieldHasErrors("name") && "text-red-500")}
+            >
+              Name
+            </Label>
+            <Input
+              id="name"
+              name="name"
+              className={cn(fieldHasErrors("name") && "border-red-500")}
+              ref={nameInputRef}
+            />
+            {fieldHasErrors("name") && (
+              <FormMessage message={getFieldErrors("name")[0]} />
+            )}
+            {/* <FormMessage>Error here</FormMessage> */}
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea id="description" name="description" />
+            <Textarea
+              ref={descriptionInputRef}
+              id="description"
+              name="description"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="waysOfWorking">Ways of Working</Label>
@@ -94,9 +157,16 @@ export function CreateBusinessFunction({
             /> */}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="squad">Squad</Label>
+            <Label
+              htmlFor="squad"
+              className={cn(fieldHasErrors("squad") && "text-red-500")}
+            >
+              Squad
+            </Label>
             <Select name="squad">
-              <SelectTrigger>
+              <SelectTrigger
+                className={cn(fieldHasErrors("squad") && "border-red-500")}
+              >
                 <SelectValue placeholder="Select a squad" />
               </SelectTrigger>
               <SelectContent>
@@ -107,6 +177,9 @@ export function CreateBusinessFunction({
                 ))}
               </SelectContent>
             </Select>
+            {fieldHasErrors("squad") && (
+              <FormMessage message={getFieldErrors("squad")[0]} />
+            )}
           </div>
           <Button type="submit">Create Business Function</Button>
         </form>

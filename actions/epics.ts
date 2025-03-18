@@ -43,8 +43,6 @@ export async function createEpic(prevState: any, formData: FormData) {
   } catch (err) {
     console.error("err", error);
   }
-
-  // revalidatePath(`/business-function/${data.functionId}`);
 }
 
 // // READ

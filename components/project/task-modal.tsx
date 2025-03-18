@@ -1,66 +1,84 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { formatDistanceToNow } from "date-fns"
-import { AlertCircle, CheckCircle, Link2, Paperclip, Plus } from "lucide-react"
-import type { Task, User, Comment } from "@/lib/types"
+import { useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
+import { AlertCircle, CheckCircle, Link2, Paperclip, Plus } from "lucide-react";
+import type { User, Comment } from "@/lib/types";
+import { Task } from "@/payload-types";
 
 interface TaskModalProps {
-  task: Task
-  users: User[]
-  comments: Comment[]
-  isOpen: boolean
-  onClose: () => void
-  onUpdate: (updatedTask: Task) => void
-  onAddComment: (comment: Omit<Comment, "id" | "timestamp">) => void
+  task: Task;
+  users: User[];
+  // comments: Comment[];
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: (updatedTask: Task) => void;
+  // onAddComment: (comment: Omit<Comment, "id" | "timestamp">) => void;
 }
 
-export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, onAddComment }: TaskModalProps) {
-  const [editedTask, setEditedTask] = useState(task)
-  const [newComment, setNewComment] = useState("")
-  const [editingField, setEditingField] = useState<string | null>(null)
+export function TaskModal({
+  task,
+  users,
+  // comments,
+  isOpen,
+  onClose,
+  onUpdate,
+  // onAddComment,
+}: TaskModalProps) {
+  const [editedTask, setEditedTask] = useState(task);
+  const [newComment, setNewComment] = useState("");
+  const [editingField, setEditingField] = useState<string | null>(null);
 
   const handleInputChange = (field: keyof Task, value: string) => {
-    setEditedTask({ ...editedTask, [field]: value })
-  }
+    setEditedTask({ ...editedTask, [field]: value });
+  };
 
   const handleUpdate = (field: keyof Task) => {
-    onUpdate(editedTask)
-    setEditingField(null)
-  }
+    onUpdate(editedTask);
+    setEditingField(null);
+  };
 
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      onAddComment({
-        content: newComment,
-        user: users[0], // Assuming the first user is the current user
-        taskId: task.id,
-        taskTitle: task.title,
-      })
-      setNewComment("")
-    }
-  }
+  // const handleAddComment = () => {
+  //   if (newComment.trim()) {
+  //     onAddComment({
+  //       content: newComment,
+  //       user: users[0], // Assuming the first user is the current user
+  //       taskId: task.id.toString(),
+  //       taskTitle: task.name || "",
+  //     });
+  //     setNewComment("");
+  //   }
+  // };
 
   const renderField = (
     field: keyof Task,
     label: string,
     type: "text" | "textarea" | "select",
-    options?: { value: string; label: string }[],
+    options?: { value: string; label: string }[]
   ) => {
-    const isEditing = editingField === field
+    const isEditing = editingField === field;
 
     if (isEditing) {
       if (type === "select" && options) {
         return (
           <div className="flex items-center gap-2">
-            <Select value={editedTask[field] as string} onValueChange={(value) => handleInputChange(field, value)}>
+            <Select
+              value={editedTask[field] as string}
+              onValueChange={(value) => handleInputChange(field, value)}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
@@ -76,7 +94,7 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
               Save
             </Button>
           </div>
-        )
+        );
       }
 
       return (
@@ -98,15 +116,20 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
             Save
           </Button>
         </div>
-      )
+      );
     }
 
     return (
-      <div className="cursor-pointer hover:bg-muted/50 rounded-md p-1 -m-1" onClick={() => setEditingField(field)}>
-        {editedTask[field] || "Click to edit"}
+      <div
+        className="cursor-pointer hover:bg-muted/50 rounded-md p-1 -m-1"
+        onClick={() => setEditingField(field)}
+      >
+        {typeof editedTask[field] === "string" ||
+          (typeof editedTask[field] === "string" && editedTask[field]) ||
+          "Click to edit"}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -117,13 +140,17 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
             <div className="space-y-6">
               {/* Title */}
               <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Title</div>
-                {renderField("title", "Title", "text")}
+                <div className="text-sm font-medium text-muted-foreground">
+                  Title
+                </div>
+                {renderField("name", "Title", "text")}
               </div>
 
               {/* Description */}
               <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Description</div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  Description
+                </div>
                 {renderField("description", "Description", "textarea")}
               </div>
 
@@ -144,20 +171,34 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
               </div>
 
               {/* Comments */}
-              <div className="space-y-4">
-                <div className="text-sm font-medium text-muted-foreground">Comments</div>
+              {/* <div className="space-y-4">
+                <div className="text-sm font-medium text-muted-foreground">
+                  Comments
+                </div>
                 <div className="space-y-4">
                   {comments.map((comment) => (
-                    <div key={comment.id} className="flex items-start space-x-4">
+                    <div
+                      key={comment.id}
+                      className="flex items-start space-x-4"
+                    >
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-                        <AvatarFallback>{comment.user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarImage
+                          src={comment.user.avatar}
+                          alt={comment.user.name}
+                        />
+                        <AvatarFallback>
+                          {comment.user.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium">{comment.user.name}</p>
+                        <p className="text-sm font-medium">
+                          {comment.user.name}
+                        </p>
                         <p className="text-sm">{comment.content}</p>
                         <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(comment.timestamp), {
+                            addSuffix: true,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -166,7 +207,9 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
                 <div className="flex items-start gap-4">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={users[0].avatar} alt={users[0].name} />
-                    <AvatarFallback>{users[0].name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>
+                      {users[0].name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-2">
                     <Textarea
@@ -178,14 +221,16 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
                     <Button onClick={handleAddComment}>Comment</Button>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Status */}
               <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Status</div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  Status
+                </div>
                 {renderField("status", "Status", "select", [
                   { value: "todo", label: "To Do" },
                   { value: "in-progress", label: "In Progress" },
@@ -196,12 +241,20 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
 
               {/* Blocked Status */}
               <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Status</div>
-                {editedTask.isBlocked ? (
-                  <Badge variant="destructive" className="flex items-center gap-1">
+                <div className="text-sm font-medium text-muted-foreground">
+                  Status
+                </div>
+                {false ? (
+                  // {editedTask.isBlocked ? (
+                  <Badge
+                    variant="destructive"
+                    className="flex items-center gap-1"
+                  >
                     <AlertCircle className="w-3 h-3" />
                     Blocked by{" "}
-                    <span className="ml-1 text-primary-foreground underline">{editedTask.blockedByTitle}</span>
+                    <span className="ml-1 text-primary-foreground underline">
+                      {editedTask.status}
+                    </span>
                   </Badge>
                 ) : (
                   <Badge variant="success" className="flex items-center gap-1">
@@ -213,41 +266,56 @@ export function TaskModal({ task, users, comments, isOpen, onClose, onUpdate, on
 
               {/* Assignee */}
               <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Assignee</div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  Assignee
+                </div>
                 {renderField(
                   "assignee",
                   "Assignee",
                   "select",
-                  users.map((user) => ({ value: user.id, label: user.name })),
+                  users.map((user) => ({ value: user.id, label: user.name }))
                 )}
               </div>
 
               {/* Priority */}
-              <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Priority</div>
+              {/* <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">
+                  Priority
+                </div>
                 {renderField("priority", "Priority", "select", [
                   { value: "low", label: "Low" },
                   { value: "medium", label: "Medium" },
                   { value: "high", label: "High" },
                 ])}
-              </div>
+              </div> */}
 
               {/* Due Date */}
               <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Due Date</div>
-                {renderField("dueDate", "Due Date", "text")}
+                <div className="text-sm font-medium text-muted-foreground">
+                  Due Date
+                </div>
+                {renderField("closureDate", "Due Date", "text")}
               </div>
 
               {/* Created/Updated Info */}
               <div className="space-y-2 text-sm text-muted-foreground">
-                <div>Created {formatDistanceToNow(new Date(task.createdAt || Date.now()), { addSuffix: true })}</div>
-                <div>Updated {formatDistanceToNow(new Date(task.updatedAt || Date.now()), { addSuffix: true })}</div>
+                <div>
+                  Created{" "}
+                  {formatDistanceToNow(new Date(task.createdAt || Date.now()), {
+                    addSuffix: true,
+                  })}
+                </div>
+                <div>
+                  Updated{" "}
+                  {formatDistanceToNow(new Date(task.updatedAt || Date.now()), {
+                    addSuffix: true,
+                  })}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

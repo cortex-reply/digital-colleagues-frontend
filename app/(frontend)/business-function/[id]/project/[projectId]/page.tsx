@@ -18,13 +18,13 @@ export default async function ProjectPage({
     <Shell>
       <ProjectView
         project={{
-          businessFunctionId: "bf1",
-          taskCount: 10,
-          messageCount: 24,
-          lastUpdated: "2023-06-15",
-          messages: [],
-          events: [],
-          comments: [],
+          // businessFunctionId: "bf1",
+          // taskCount: 10,
+          // messageCount: 24,
+          // lastUpdated: "2023-06-15",
+          // messages: [],
+          // events: [],
+          // comments: [],
           ...project,
         }}
       />

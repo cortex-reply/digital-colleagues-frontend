@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload } from "lucide-react";
 import { createProject } from "@/actions/projects";
 import { useProjectContext } from "@/providers/projects";
+import { useBusinessFunctionContext } from "@/providers/bussiness-function";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export function CreateProjectModal({
     status: "",
   } as any);
   const { refetch, functionId } = useProjectContext();
+  const { refetch: refetchFunctions } = useBusinessFunctionContext();
 
   useEffect(() => {
     setOpen(isOpen);
@@ -45,6 +47,7 @@ export function CreateProjectModal({
     if (state && state.status === "success") {
       setOpen(false);
       refetch();
+      refetchFunctions();
     }
   }, [state]);
 

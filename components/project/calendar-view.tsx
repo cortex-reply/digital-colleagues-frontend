@@ -1,25 +1,27 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { Task } from "@/lib/types"
+import { useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Task } from "@/payload-types";
 
 export function CalendarView({ tasks }: { tasks: Task[] }) {
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   // Get tasks for the selected date
   const selectedDateTasks = date
     ? tasks.filter((task) => {
-        if (!task.dueDate) return false
-        const taskDate = new Date(task.dueDate)
-        return taskDate.toDateString() === date.toDateString()
+        if (!task.closureDate) return false;
+        const taskDate = new Date(task.closureDate);
+        return taskDate.toDateString() === date.toDateString();
       })
-    : []
+    : [];
 
   // Get dates with tasks for highlighting in the calendar
-  const datesWithTasks = tasks.filter((task) => task.dueDate).map((task) => new Date(task.dueDate))
+  const datesWithTasks = tasks
+    .filter((task) => task.closureDate)
+    .map((task) => new Date(task.closureDate));
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -67,25 +69,36 @@ export function CalendarView({ tasks }: { tasks: Task[] }) {
             ) : (
               <div className="space-y-4">
                 {selectedDateTasks.map((task) => (
-                  <div key={task.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                  <div
+                    key={task.id}
+                    className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium">{task.title}</h3>
-                      <Badge
-                        variant={task.type === "epic" ? "default" : task.type === "story" ? "outline" : "secondary"}
+                      <h3 className="font-medium">{task.name}</h3>
+                      {/* <Badge
+                        variant={
+                          task.type === "epic"
+                            ? "default"
+                            : task.type === "story"
+                              ? "outline"
+                              : "secondary"
+                        }
                         className="rounded-md"
                       >
                         {task.type}
-                      </Badge>
+                      </Badge> */}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {task.description}
+                    </p>
                     <div className="flex items-center justify-between">
                       <Badge
                         variant={
                           task.status === "todo"
                             ? "outline"
-                            : task.status === "in-progress"
+                            : task.status === "inProgress"
                               ? "default"
-                              : task.status === "review"
+                              : task.status === "backlog"
                                 ? "secondary"
                                 : "success"
                         }
@@ -93,14 +106,20 @@ export function CalendarView({ tasks }: { tasks: Task[] }) {
                       >
                         {task.status}
                       </Badge>
-                      {task.assignee && (
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary">
-                            {task.assignee.substring(0, 2).toUpperCase()}
+                      {task.assignee &&
+                        typeof task.assignee !== "number" &&
+                        typeof task.assignee.human !== "number" && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary">
+                              {task.assignee.human?.name
+                                .substring(0, 2)
+                                .toUpperCase()}
+                            </div>
+                            <span className="text-xs">
+                              {task.assignee.human?.name}
+                            </span>
                           </div>
-                          <span className="text-xs">{task.assignee}</span>
-                        </div>
-                      )}
+                        )}
                     </div>
                   </div>
                 ))}
@@ -110,6 +129,5 @@ export function CalendarView({ tasks }: { tasks: Task[] }) {
         </Card>
       </div>
     </div>
-  )
+  );
 }
-

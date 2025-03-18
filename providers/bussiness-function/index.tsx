@@ -16,11 +16,16 @@ import React, {
   useState,
 } from "react";
 
+type ExtendedBusinessFunctionType = Function & { projectCount?: number };
+
 export type BusinessFunctionContextType = {
-  businessFunctions: Function[];
+  businessFunctions: ExtendedBusinessFunctionType[];
   // setBusinessFunctions: Dispatch<SetStateAction<Function[]>>;
   refetch: () => void | Promise<void>;
-  updateBusinessFunction: (id: number, data?: Partial<Function>) => void;
+  updateBusinessFunction: (
+    id: number,
+    data?: Partial<ExtendedBusinessFunctionType>
+  ) => void;
 };
 
 const Context = createContext({} as BusinessFunctionContextType);
@@ -28,15 +33,17 @@ const Context = createContext({} as BusinessFunctionContextType);
 export const BusinessFunctionContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
-  const [businessFunctions, setBusinessFunctions] = useState<Function[]>([]);
+  const [businessFunctions, setBusinessFunctions] = useState<
+    ExtendedBusinessFunctionType[]
+  >([]);
 
   const fetchBusinessFunctions = useCallback(async () => {
     const functions = await getBusinessFunctions();
-    setBusinessFunctions(functions.docs);
+    setBusinessFunctions(functions.docs as ExtendedBusinessFunctionType[]);
   }, []);
 
   const updateBusinessFunction = useCallback(
-    async (id: number, data?: Partial<Function>) => {
+    async (id: number, data?: Partial<ExtendedBusinessFunctionType>) => {
       if (data) {
         setBusinessFunctions((prev) => {
           const copy = [...prev].map((el) => {

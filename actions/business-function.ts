@@ -3,7 +3,6 @@
 import { getPayload } from "payload";
 import config from "@/payload.config";
 import { z } from "zod";
-import { redirect } from "next/navigation";
 
 const CreateBusinessFunctionSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required." }),
@@ -18,17 +17,25 @@ export async function createBusinessFunction(
   prevState: any,
   formData: FormData
 ) {
+  const payload = await getPayload({ config });
   const formEntry = Object.fromEntries(formData);
   const { success, data, error } =
     CreateBusinessFunctionSchema.safeParse(formEntry);
 
   if (!success) {
     return {
-      errors: {},
+      errors: error.flatten().fieldErrors,
+      data: formEntry,
     };
   }
 
-  const payload = await getPayload({ config });
+  const { docs: squads, totalDocs: squadCount } = await payload.find({
+    collection: "squads",
+    where: { id: { equals: data.squad } },
+  });
+
+  if (squadCount === 0)
+    return { errors: { squad: ["Squad is required"] }, data: formEntry };
 
   const docs = await payload.create({
     collection: "functions",
@@ -51,7 +58,7 @@ export async function getBusinessFunctions() {
 
   const mappedFunctions = await Promise.all(
     docs.map(async (businessFunc) => {
-      const projects = await payload.find({
+      const projects = await payload.count({
         collection: "projects",
         where: {
           "businessFunction.id": {
@@ -62,7 +69,7 @@ export async function getBusinessFunctions() {
 
       return {
         ...businessFunc,
-        projectCount: projects.docs.length,
+        projectCount: projects.totalDocs,
       };
     })
   );
@@ -86,6 +93,15 @@ export async function getBusinessFunctionById(id: string) {
 
   if (docs && docs.length > 0) {
     const item = docs[0];
-    return { function: item };
+    const { totalDocs: projectCount } = await payload.count({
+      collection: "projects",
+      where: {
+        "businessFunction.id": {
+          equals: item.id,
+        },
+      },
+    });
+
+    return { function: { ...item, projectCount: projectCount } };
   } else return { message: "No function found for the given Id" };
 }

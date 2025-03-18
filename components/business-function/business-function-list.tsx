@@ -70,15 +70,15 @@ export function BusinessFunctionList() {
                 </CardContent>
               )}
 
-              {/* <CardFooter className="border-t bg-muted/50 pt-3">
+              <CardFooter className="border-t bg-muted/50 pt-3">
                 <div className="text-sm font-medium">
-                  {businessFunction?.projectCount}{" "}
+                  {businessFunction?.projectCount}
                   {businessFunction?.projectCount &&
                   businessFunction?.projectCount > 1
-                    ? "Project"
-                    : "Projects"}
+                    ? " Projects"
+                    : " Project"}
                 </div>
-              </CardFooter> */}
+              </CardFooter>
             </Card>
           </Link>
         ))}

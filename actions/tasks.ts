@@ -11,7 +11,6 @@ const createTaskSchema = z.object({
   status: z.enum(["backlog", "todo", "inProgress", "done", "cancelled"]),
   projectId: z.string(),
   epic: z.string(),
-  // waysOfWorking: z.string(),
 });
 
 // CREATE
@@ -19,8 +18,6 @@ const createTaskSchema = z.object({
 export async function createTask(prevState: any, formData: FormData) {
   const formEntry = Object.fromEntries(formData);
   const { success, data, error } = createTaskSchema.safeParse(formEntry);
-
-  console.log("error", error);
 
   if (!success) {
     return {

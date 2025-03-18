@@ -11,11 +11,10 @@ const createProjectSchema = z.object({
   workInstructions: z
     .string()
     .min(1, { message: "Work instruction is required" }),
-  // waysOfWorking: z.string(),
 });
 
 // CREATE
-// creation of business functions
+// creation of a project
 export async function createProject(prevState: any, formData: FormData) {
   const formEntry = Object.fromEntries(formData);
   const { success, data, error } = createProjectSchema.safeParse(formEntry);
