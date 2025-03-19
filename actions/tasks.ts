@@ -220,8 +220,6 @@ export async function updateTaskAssignee(taskId: string, assigneeId: string) {
     },
   });
 
-  console.log("assignee", assignee, assigneeId);
-
   if (!assignee) return;
 
   const { docs, errors } = await payload.update({
