@@ -34,6 +34,10 @@ import { useEpicContext } from "@/providers/epics";
 import { createTask } from "@/actions/tasks";
 import useFormErrors from "@/hooks/useFormError";
 import FormMessage from "@/components/form/message";
+import { useBusinessFunctionContext } from "@/providers/bussiness-function";
+import { useParams } from "next/navigation";
+import { Colleague, Squad } from "@/payload-types";
+import { getSquadById } from "@/actions/squads";
 
 interface CreateTaskFormProps {
   projectId: string;
@@ -54,6 +58,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   projectId,
   onTaskCreated,
 }) => {
+  const [squadMembers, setSquadMembers] = useState<Colleague[]>([]);
   const [state, formAction] = useActionState(createTask, {} as any);
   const { setError, getFieldErrors, clearAllErrors, fieldHasErrors } =
     useFormErrors<FieldValues>(fields);
@@ -63,6 +68,34 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [priority, setPriority] = useState<string | undefined>(undefined);
   const [assignee, setAssignee] = useState<string | undefined>(undefined);
+  const { businessFunctions } = useBusinessFunctionContext();
+  const params = useParams();
+  const functionId = params.id as string;
+
+  const fetchColleagues = useCallback(async () => {
+    const currFunction = businessFunctions.find(
+      (el) => el.id.toString() === functionId
+    );
+
+    if (!currFunction) return;
+
+    const squad =
+      typeof currFunction?.squad === "number"
+        ? (await getSquadById(currFunction.squad)).squad
+        : currFunction?.squad;
+
+    if (!squad) return;
+
+    const colleagues = squad?.colleagues?.filter(
+      (el) => typeof el !== "number"
+    );
+
+    if (colleagues) setSquadMembers(colleagues);
+  }, [businessFunctions, functionId]);
+
+  useEffect(() => {
+    fetchColleagues();
+  }, []);
 
   useEffect(() => {
     if (state && state.status === "success") {
@@ -238,11 +271,23 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
                 <SelectValue placeholder="Select assignee" />
               </SelectTrigger>
               <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name}
-                  </SelectItem>
-                ))}
+                {squadMembers.map((member) => {
+                  const human =
+                    member.human && typeof member.human !== "number"
+                      ? member.human
+                      : null;
+                  const agent =
+                    member.agents && typeof member.agents !== "number"
+                      ? member.agents
+                      : null;
+
+                  if (!human && !agent) return;
+                  return (
+                    <SelectItem key={member.id} value={member.id.toString()}>
+                      {human ? human.name : agent ? agent.name : "Name here"}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             {fieldHasErrors("assignee") && (

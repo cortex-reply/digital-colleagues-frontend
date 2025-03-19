@@ -17,6 +17,7 @@ export type ProjectContextType = {
   functionId: number | null;
   // setFunctionId: Dispatch<SetStateAction<number | null>>;
   refetch: () => void;
+  fetching: boolean;
 };
 
 const Context = createContext({} as ProjectContextType);
@@ -26,8 +27,9 @@ export const ProjectContextProvider: React.FC<PropsWithChildren> = ({
 }) => {
   const [functionId, setFunctionId] = useState<number | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [fetching, setFetching] = useState(false);
   const params = useParams();
-  const paramFunctionId = params.id;
+  const paramFunctionId = params.id as string;
 
   useEffect(() => {
     if (paramFunctionId && typeof paramFunctionId === "string")
@@ -36,8 +38,15 @@ export const ProjectContextProvider: React.FC<PropsWithChildren> = ({
 
   const fetchFunctionProjects = useCallback(async () => {
     if (!functionId) return;
-    const res = await getProjectsByBusinessFunctionId(functionId.toString());
-    setProjects(res.docs);
+    setFetching(true);
+    try {
+      const res = await getProjectsByBusinessFunctionId(functionId.toString());
+      setProjects(res.docs);
+    } catch (err) {
+      console.error("Error fetching projects", err);
+    } finally {
+      setFetching(false);
+    }
   }, [functionId]);
 
   const refetch = useCallback(async () => {
@@ -48,7 +57,7 @@ export const ProjectContextProvider: React.FC<PropsWithChildren> = ({
     fetchFunctionProjects();
   }, [functionId]);
   return (
-    <Context.Provider value={{ projects, functionId, refetch }}>
+    <Context.Provider value={{ projects, functionId, refetch, fetching }}>
       {children}
     </Context.Provider>
   );

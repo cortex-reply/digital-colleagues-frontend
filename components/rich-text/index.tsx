@@ -142,7 +142,7 @@ const RichText: React.FC<RichTextProps> = ({ setValue, value, name }) => {
           contentEditable={
             <ContentEditable
               name={name}
-              className="editor-input focus:outline-none focus:ring-0 focus-visible:outline-none"
+              className="editor-input focus:outline-none focus:ring-0 focus-visible:outline-none min-h-40"
             />
           }
           // placeholder={<Placeholder />}/

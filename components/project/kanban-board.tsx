@@ -215,7 +215,7 @@ export function KanbanBoard({
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {Object.values(columns).map((column) => (
-            <div key={column.id} className="space-y-4">
+            <div key={`${column.title}-${column.id}`} className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-medium text-sm">{column.title}</h3>
                 <Badge variant="outline" className="rounded-md">

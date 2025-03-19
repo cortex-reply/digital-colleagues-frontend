@@ -12,3 +12,33 @@ export async function getColleagues() {
 
   return { colleagues };
 }
+
+export async function getHumanColleagues(ids: string[]) {
+  const payload = await getPayload({ config });
+
+  const { docs: humans } = await payload.find({
+    collection: "users",
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  });
+
+  return { humans };
+}
+
+export async function getAgentColleagues(ids: string[]) {
+  const payload = await getPayload({ config });
+
+  const { docs: agents } = await payload.find({
+    collection: "agents",
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  });
+
+  return { agents };
+}

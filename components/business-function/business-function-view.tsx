@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Briefcase } from "lucide-react";
@@ -18,7 +18,12 @@ export function BusinessFunctionView({
   businessFunction: Function;
 }) {
   const [open, setOpen] = useState(false);
-  const { projects } = useProjectContext();
+  const [projectLoading, setProjectLoading] = useState(false);
+  const { projects, functionId, fetching } = useProjectContext();
+
+  useEffect(() => {
+    setProjectLoading(functionId !== businessFunction.id || fetching);
+  }, [functionId, businessFunction, fetching]);
 
   return (
     <div className="space-y-8">
@@ -57,10 +62,16 @@ export function BusinessFunctionView({
           <TabsTrigger value="search">Search</TabsTrigger>
         </TabsList>
         <TabsContent value="projects" className="space-y-4">
-          <BusinessFunctionProjects
-            functionId={businessFunction.id}
-            projects={projects}
-          />
+          {projectLoading ? (
+            <div className="w-full h-[20vh] flex flex-col items-center justify-center ">
+              <span>Loading...</span>
+            </div>
+          ) : (
+            <BusinessFunctionProjects
+              functionId={businessFunction.id}
+              projects={projects}
+            />
+          )}
         </TabsContent>
         <TabsContent value="chat">
           <BusinessFunctionChat />

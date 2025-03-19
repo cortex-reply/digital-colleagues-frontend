@@ -2,8 +2,8 @@
 
 import type React from "react";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,20 +25,31 @@ import { useProjectContext } from "@/providers/projects";
 export function Shell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const params = useParams();
   const [
     isCreateBusinessFunctionModalOpen,
     setIsCreateBusinessFunctionModalOpen,
   ] = useState(false);
+  const [projectsLoading, setProjectLoading] = useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] =
     useState(false);
 
   const { businessFunctions } = useBusinessFunctionContext();
-  const { projects } = useProjectContext();
+  const { projects, functionId, fetching } = useProjectContext();
 
   // Extract business function ID from path
-  const businessFunctionId = pathname.includes("/business-function/")
-    ? pathname.split("/business-function/")[1].split("/")[0]
-    : null;
+  // const businessFunctionId = pathname.includes("/business-function/")
+  //   ? pathname.split("/business-function/")[1].split("/")[0]
+  //   : null;
+
+  const businessFunctionId = params.id as string;
+
+  useEffect(() => {
+    if (functionId !== null)
+      setProjectLoading(
+        businessFunctionId !== functionId.toString() || fetching
+      );
+  }, [businessFunctionId, functionId, fetching]);
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -198,22 +209,30 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       <span className="sr-only">Add Project</span>
                     </Button>
                   </div>
-                  {projects.map((project) => (
-                    <Link
-                      key={project.id}
-                      href={`/business-function/${businessFunctionId}/project/${project.id}`}
-                      className={cn(
-                        "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
-                        pathname ===
-                          `/business-function/${businessFunctionId}/project/${project.id}`
-                          ? "bg-accent"
-                          : "hover:bg-accent"
-                      )}
-                    >
-                      <span>{project.name}</span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </Link>
-                  ))}
+                  {projectsLoading ? (
+                    <div>
+                      <span>Loading...</span>
+                    </div>
+                  ) : (
+                    <>
+                      {projects.map((project) => (
+                        <Link
+                          key={project.id}
+                          href={`/business-function/${businessFunctionId}/project/${project.id}`}
+                          className={cn(
+                            "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                            pathname ===
+                              `/business-function/${businessFunctionId}/project/${project.id}`
+                              ? "bg-accent"
+                              : "hover:bg-accent"
+                          )}
+                        >
+                          <span>{project.name}</span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>

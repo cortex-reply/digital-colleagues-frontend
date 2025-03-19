@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,11 +30,15 @@ import {
   Plus,
 } from "lucide-react";
 import type { User, Comment } from "@/lib/types";
-import { Task } from "@/payload-types";
-import { updateTaskInfo } from "@/actions/tasks";
+import { Colleague, Task } from "@/payload-types";
+import { updateTaskAssignee, updateTaskInfo } from "@/actions/tasks";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, getId } from "@/lib/utils";
 import { Calendar } from "../ui/calendar";
+import { useBusinessFunctionContext } from "@/providers/bussiness-function";
+import { useParams } from "next/navigation";
+import { getSquadById } from "@/actions/squads";
+import { getHumanColleagues } from "@/actions/colleagues";
 
 interface TaskModalProps {
   task: Task;
@@ -56,17 +60,77 @@ export function TaskModal({
   // onAddComment,
 }: TaskModalProps) {
   const [editedTask, setEditedTask] = useState(task);
+  const [selectOptions, setSelectOptions] = useState<Record<string, any>>({});
   const [newComment, setNewComment] = useState("");
   const [editingField, setEditingField] = useState<string | null>(null);
+  const [colleagues, setColleagues] = useState<Colleague[]>([]);
 
-  const handleInputChange = (field: keyof Task, value: string) => {
-    setEditedTask({ ...editedTask, [field]: value });
+  const { businessFunctions } = useBusinessFunctionContext();
+  const params = useParams();
+  const functionId = params.id as string;
+
+  const fetchColleagues = useCallback(async () => {
+    const currFunction = businessFunctions.find(
+      (el) => el.id.toString() === functionId
+    );
+
+    if (!currFunction || !currFunction.squad) return;
+
+    const squadId = getId(currFunction.squad, "number") as number;
+    const squad = (await getSquadById(squadId)).squad;
+
+    if (!squad) return;
+
+    const colleagues = squad?.colleagues?.filter(
+      (el) => typeof el !== "number"
+    );
+
+    if (colleagues) {
+      setColleagues(colleagues);
+      setSelectOptions((prev) => ({ ...prev, assignee: colleagues }));
+    }
+  }, [businessFunctions, functionId]);
+
+  useEffect(() => {
+    fetchColleagues();
+    const assignee =
+      task.assignee && typeof task.assignee !== "number" ? task.assignee : null;
+    if (assignee) {
+      if (assignee.agents)
+        editedTask["assignee"] = getId(assignee.agents, "number") as number;
+      else if (assignee.human)
+        editedTask["assignee"] = getId(assignee.human, "number") as number;
+    }
+  }, []);
+
+  const handleInputChange = (
+    field: keyof Task,
+    value: string,
+    mode: "select" | "other" = "other"
+  ) => {
+    setEditedTask((prev) => {
+      if (mode === "select" && selectOptions[field]) {
+        const found = selectOptions[field].find(
+          (el: any) => el.id.toString() === value.toString()
+        );
+        return {
+          ...prev,
+          [field]: found,
+        };
+      } else return { ...prev, [field]: value };
+    });
   };
 
   const handleUpdate = async (field: keyof Task) => {
     const updatableTasks = ["name", "description", "status", "closureDate"];
     if (updatableTasks.includes(field)) {
       await updateTaskInfo(task.id, { [field]: editedTask[field] });
+    } else if (field === "assignee") {
+      if (editedTask["assignee"])
+        await updateTaskAssignee(
+          task.id.toString(),
+          editedTask["assignee"]?.id.toString()
+        );
     }
     onUpdate(editedTask);
     setEditingField(null);
@@ -97,15 +161,24 @@ export function TaskModal({
         return (
           <div className="flex items-center gap-2">
             <Select
-              value={editedTask[field] as string}
-              onValueChange={(value) => handleInputChange(field, value)}
+              value={
+                (typeof editedTask[field].id === "number"
+                  ? editedTask[field].id.toString()
+                  : editedTask[field]) as string
+              }
+              onValueChange={(value) =>
+                handleInputChange(field, value, "select")
+              }
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue />
+                <SelectValue placeholder="Select Assignee" />
               </SelectTrigger>
               <SelectContent>
                 {options.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem
+                    key={option.value}
+                    value={option.value.toString()}
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -175,9 +248,13 @@ export function TaskModal({
         className="cursor-pointer hover:bg-muted/50 rounded-md p-1 -m-1"
         onClick={() => setEditingField(field)}
       >
-        {typeof editedTask[field] === "string" &&
-          editedTask[field] &&
-          editedTask[field]}
+        {type === "select"
+          ? options?.find(
+              (el) => el.value.toString() === editedTask[field]?.toString()
+            )?.label
+          : typeof editedTask[field] === "string" &&
+            editedTask[field] &&
+            editedTask[field]}
       </div>
     );
   };
@@ -329,7 +406,28 @@ export function TaskModal({
                   "assignee",
                   "Assignee",
                   "select",
-                  users.map((user) => ({ value: user.id, label: user.name }))
+                  colleagues
+                    .filter((el) => {
+                      return (
+                        (el.agents && typeof el.agents !== "number") ||
+                        (el.human && typeof el.human !== "number")
+                      );
+                    })
+                    .map((member) => {
+                      const humanName =
+                        member.human && typeof member.human !== "number"
+                          ? member.human.name
+                          : null;
+                      const agentName =
+                        member.agents && typeof member.agents !== "number"
+                          ? member.agents.name
+                          : null;
+
+                      return {
+                        value: member.id.toString(),
+                        label: (humanName ? humanName : agentName) as string,
+                      };
+                    })
                 )}
               </div>
 

@@ -19,6 +19,7 @@ export async function getSquadById(squadId: number) {
   const squad = await payload.findByID({
     collection: "squads",
     id: squadId,
+    depth: 4,
   });
 
   return { squad };

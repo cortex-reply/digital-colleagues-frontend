@@ -1,6 +1,6 @@
 "use server";
 
-import { BasePayload, getPayload } from "payload";
+import { getPayload } from "payload";
 import config from "@/payload.config";
 import { z } from "zod";
 import { Task } from "@/payload-types";
@@ -13,6 +13,7 @@ const createTaskSchema = z.object({
   }),
   projectId: z.string(),
   epic: z.string(),
+  assignee: z.string(),
 });
 
 // CREATE
@@ -48,6 +49,26 @@ export async function createTask(prevState: any, formData: FormData) {
     };
   }
 
+  if (data.assignee) {
+    const { totalDocs: assigneeCount } = await payload.count({
+      collection: "colleagues",
+      where: {
+        id: {
+          equals: data.assignee,
+        },
+      },
+    });
+
+    if (assigneeCount === 0) {
+      return {
+        errors: {
+          epic: ["Assign is required"],
+        },
+        data: formEntry,
+      };
+    }
+  }
+
   try {
     // getting the last index for the current status
     const {
@@ -70,6 +91,7 @@ export async function createTask(prevState: any, formData: FormData) {
         ...data,
         project: parseInt(data.projectId),
         epic: parseInt(data.epic),
+        assignee: parseInt(data.assignee),
         dateLogged: new Date().toString(),
         index: (lastIndex || 0) + 1,
       },
@@ -184,6 +206,45 @@ export async function updateTaskIndex(
   return { status: "success" };
 }
 
+export async function updateTaskAssignee(taskId: string, assigneeId: string) {
+  const payload = await getPayload({ config });
+
+  const {
+    docs: [assignee],
+  } = await payload.find({
+    collection: "colleagues",
+    where: {
+      id: {
+        equals: assigneeId,
+      },
+    },
+  });
+
+  console.log("assignee", assignee, assigneeId);
+
+  if (!assignee) return;
+
+  const { docs, errors } = await payload.update({
+    collection: "tasks",
+    where: {
+      and: [
+        {
+          id: {
+            equals: taskId,
+          },
+        },
+      ],
+    },
+    data: {
+      assignee,
+    },
+  });
+
+  if (errors && Array.isArray(errors) && errors.length > 0)
+    return { errors: errors.map((el) => el.message) };
+
+  return { task: docs[0] };
+}
 export async function updateTaskInfo(
   taskId: number,
   data: Partial<Pick<Task, "name" | "description" | "status" | "closureDate">>
