@@ -7,7 +7,18 @@ import { z } from "zod";
 const CreateBusinessFunctionSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required." }),
   description: z.string().optional(),
-  squad: z.coerce.number(),
+  // colleagues: z.string().array(),
+  colleagues: z.preprocess((val) => {
+    if (typeof val === "string") {
+      try {
+        return JSON.parse(val);
+      } catch {
+        return val; // If parsing fails, let Zod handle the validation error
+      }
+    }
+    return val;
+  }, z.array(z.string())),
+  // squad: z.coerce.number(),
   waysOfWorking: z.any(),
 });
 
@@ -29,18 +40,38 @@ export async function createBusinessFunction(
     };
   }
 
-  const { docs: squads, totalDocs: squadCount } = await payload.find({
-    collection: "squads",
-    where: { id: { equals: data.squad } },
+  // const { docs: squads, totalDocs: squadCount } = await payload.find({
+  //   collection: "squads",
+  //   where: { id: { equals: data.squad } },
+  // });
+
+  // if (squadCount === 0)
+  //   return { errors: { squad: ["Squad is required"] }, data: formEntry };
+
+  const { docs: colleagues } = await payload.find({
+    collection: "colleagues",
+    where: {
+      id: {
+        in: data.colleagues,
+      },
+    },
   });
 
-  if (squadCount === 0)
-    return { errors: { squad: ["Squad is required"] }, data: formEntry };
+  // create a squad
+  const squad = await payload.create({
+    collection: "squads",
+    data: {
+      name: `${data.name}-squad`,
+      description: `Squad for function ${data.name}`,
+      colleagues: colleagues,
+    },
+  });
 
   const docs = await payload.create({
     collection: "functions",
     data: {
       ...data,
+      squad,
     },
   });
 

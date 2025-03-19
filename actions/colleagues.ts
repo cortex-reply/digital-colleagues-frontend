@@ -8,6 +8,7 @@ export async function getColleagues() {
 
   const { docs: colleagues } = await payload.find({
     collection: "colleagues",
+    depth: 2,
   });
 
   return { colleagues };

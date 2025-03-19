@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createBusinessFunction } from "@/actions/business-function";
-import { Squad } from "@/payload-types";
+import { Colleague, Squad, User } from "@/payload-types";
 import { getSquads } from "@/actions/squads";
 import { useBusinessFunctionContext } from "@/providers/bussiness-function";
 import { useRouter } from "next/navigation";
@@ -36,13 +36,8 @@ import RichTextEditor, { Wrapper } from "../rich-text";
 import FormMessage from "../form/message";
 import useFormErrors from "@/hooks/useFormError";
 import { cn } from "@/lib/utils";
-
-type ErrorMessageState = {
-  name: string[] | string;
-  description: string[] | string;
-  waysOfWorking: string[] | string;
-  squad: string[] | string;
-};
+import { MultiSelect } from "../ui/multiSelect";
+import { getColleagues } from "@/actions/colleagues";
 
 interface CreateBusinessFunctionProps {
   onComplete?: () => void;
@@ -55,7 +50,8 @@ export function CreateBusinessFunction({
   onComplete,
 }: CreateBusinessFunctionProps) {
   const [state, formAction] = useActionState(createBusinessFunction, {} as any);
-  const [squads, setSquads] = useState<Squad[]>([]);
+  const [colleagues, setColleagues] = useState<Colleague[]>([]);
+  const [selectedColleagues, setSelectedColleagues] = useState<string[]>([]);
   const [waysOfWorking, setWaysOfWorking] = useState<any>();
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -67,13 +63,13 @@ export function CreateBusinessFunction({
 
   const { refetch } = useBusinessFunctionContext();
 
-  const getAllSquads = useCallback(async () => {
-    const res = await getSquads();
-    setSquads(res.squads);
+  const getAllColleagues = useCallback(async () => {
+    const res = await getColleagues();
+    setColleagues(res.colleagues);
   }, []);
 
   useEffect(() => {
-    getAllSquads();
+    getAllColleagues();
   }, []);
 
   useEffect(() => {
@@ -102,9 +98,10 @@ export function CreateBusinessFunction({
   const handleSubmit = useCallback(
     async (formData: FormData) => {
       formData.set("waysOfWorking", JSON.stringify(waysOfWorking));
+      formData.set("colleagues", JSON.stringify(selectedColleagues));
       formAction(formData);
     },
-    [waysOfWorking]
+    [waysOfWorking, selectedColleagues]
   );
 
   return (
@@ -158,12 +155,26 @@ export function CreateBusinessFunction({
           </div>
           <div className="space-y-2">
             <Label
-              htmlFor="squad"
-              className={cn(fieldHasErrors("squad") && "text-red-500")}
+              htmlFor="colleagues"
+              className={cn(fieldHasErrors("colleagues") && "text-red-500")}
             >
-              Squad
+              Colleagues
             </Label>
-            <Select name="squad">
+            <MultiSelect
+              options={colleagues
+                .filter((el) => el.human && typeof el.human !== "number")
+                .map((el) => ({
+                  label: (el.human as User)?.name,
+                  value: el.id.toString(),
+                }))}
+              onValueChange={(change) => {
+                setSelectedColleagues(change);
+              }}
+            />
+            {fieldHasErrors("colleagues") && (
+              <FormMessage message={getFieldErrors("colleagues")[0]} />
+            )}
+            {/* <Select name="squad">
               <SelectTrigger
                 className={cn(fieldHasErrors("squad") && "border-red-500")}
               >
@@ -177,9 +188,7 @@ export function CreateBusinessFunction({
                 ))}
               </SelectContent>
             </Select>
-            {fieldHasErrors("squad") && (
-              <FormMessage message={getFieldErrors("squad")[0]} />
-            )}
+             */}
           </div>
           <Button type="submit">Create Business Function</Button>
         </form>
