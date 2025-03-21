@@ -1,32 +1,55 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, Menu, Users, PlusCircle, Home, ChevronRight } from "lucide-react"
-import { businessFunctions, getProjectsByBusinessFunctionId } from "@/lib/data"
-import { CreateBusinessFunctionModal } from "@/components/business-function/create-business-function-modal"
-import { CreateProjectModal } from "@/components/project/create-project-modal"
+import { useEffect, useState } from "react";
+import { useParams, usePathname } from "next/navigation";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  LayoutDashboard,
+  Menu,
+  Users,
+  PlusCircle,
+  Home,
+  ChevronRight,
+} from "lucide-react";
+import { CreateBusinessFunctionModal } from "@/components/business-function/create-business-function-modal";
+import { CreateProjectModal } from "@/components/project/create-project-modal";
+import { useBusinessFunctionContext } from "@/providers/bussiness-function";
+import { useProjectContext } from "@/providers/projects";
 
 export function Shell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
-  const pathname = usePathname()
-  const [isCreateBusinessFunctionModalOpen, setIsCreateBusinessFunctionModalOpen] = useState(false)
-  const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false)
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const params = useParams();
+  const [
+    isCreateBusinessFunctionModalOpen,
+    setIsCreateBusinessFunctionModalOpen,
+  ] = useState(false);
+  const [projectsLoading, setProjectLoading] = useState(false);
+  const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] =
+    useState(false);
+
+  const { businessFunctions } = useBusinessFunctionContext();
+  const { projects, functionId, fetching } = useProjectContext();
 
   // Extract business function ID from path
-  const businessFunctionId = pathname.includes("/business-function/")
-    ? pathname.split("/business-function/")[1].split("/")[0]
-    : null
+  // const businessFunctionId = pathname.includes("/business-function/")
+  //   ? pathname.split("/business-function/")[1].split("/")[0]
+  //   : null;
 
-  // Get projects for the current business function
-  const projects = businessFunctionId ? getProjectsByBusinessFunctionId(businessFunctionId) : []
+  const businessFunctionId = params.id as string;
+
+  useEffect(() => {
+    if (functionId !== null)
+      setProjectLoading(
+        businessFunctionId !== functionId.toString() || fetching
+      );
+  }, [businessFunctionId, functionId, fetching]);
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -40,7 +63,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </SheetTrigger>
           <SheetContent side="left" className="w-72 p-0">
             <div className="flex h-16 items-center border-b px-6">
-              <Link href="/" className="flex items-center gap-2 text-lg font-semibold" onClick={() => setOpen(false)}>
+              <Link
+                href="/"
+                className="flex items-center gap-2 text-lg font-semibold"
+                onClick={() => setOpen(false)}
+              >
                 <LayoutDashboard className="h-6 w-6" />
                 <span>Project Management</span>
               </Link>
@@ -52,7 +79,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     href="/"
                     className={cn(
                       "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                      pathname === "/" ? "bg-accent" : "hover:bg-accent",
+                      pathname === "/" ? "bg-accent" : "hover:bg-accent"
                     )}
                     onClick={() => setOpen(false)}
                   >
@@ -60,14 +87,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     <span>Home</span>
                   </Link>
                   <div className="mt-6">
-                    <h4 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">Business Functions</h4>
+                    <h4 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">
+                      Business Functions
+                    </h4>
                     {businessFunctions.map((bf) => (
                       <Link
                         key={bf.id}
                         href={`/business-function/${bf.id}`}
                         className={cn(
                           "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                          pathname === `/business-function/${bf.id}` ? "bg-accent" : "hover:bg-accent",
+                          pathname === `/business-function/${bf.id}`
+                            ? "bg-accent"
+                            : "hover:bg-accent"
                         )}
                         onClick={() => setOpen(false)}
                       >
@@ -77,16 +108,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   </div>
                   {businessFunctionId && (
                     <div className="mt-6">
-                      <h4 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">Projects</h4>
+                      <h4 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">
+                        Projects
+                      </h4>
                       {projects.map((project) => (
                         <Link
                           key={project.id}
                           href={`/business-function/${businessFunctionId}/project/${project.id}`}
                           className={cn(
                             "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                            pathname === `/business-function/${businessFunctionId}/project/${project.id}`
+                            pathname ===
+                              `/business-function/${businessFunctionId}/project/${project.id}`
                               ? "bg-accent"
-                              : "hover:bg-accent",
+                              : "hover:bg-accent"
                           )}
                           onClick={() => setOpen(false)}
                         >
@@ -100,7 +134,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </ScrollArea>
           </SheetContent>
         </Sheet>
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-lg font-semibold"
+        >
           <LayoutDashboard className="h-6 w-6" />
           <span>Cortex | Digital Colleagues</span>
         </Link>
@@ -119,7 +156,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 href="/"
                 className={cn(
                   "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                  pathname === "/" ? "bg-accent" : "hover:bg-accent",
+                  pathname === "/" ? "bg-accent" : "hover:bg-accent"
                 )}
               >
                 <Home className="h-4 w-4" />
@@ -127,7 +164,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               </Link>
               <div className="mt-8">
                 <div className="flex items-center justify-between mb-2 px-3">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Business Functions</h4>
+                  <h4 className="text-sm font-semibold text-muted-foreground">
+                    Business Functions
+                  </h4>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -144,7 +183,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     href={`/business-function/${bf.id}`}
                     className={cn(
                       "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
-                      pathname === `/business-function/${bf.id}` ? "bg-accent" : "hover:bg-accent",
+                      pathname === `/business-function/${bf.id}`
+                        ? "bg-accent"
+                        : "hover:bg-accent"
                     )}
                   >
                     <span>{bf.name}</span>
@@ -155,7 +196,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               {businessFunctionId && (
                 <div className="mt-8">
                   <div className="flex items-center justify-between mb-2 px-3">
-                    <h4 className="text-sm font-semibold text-muted-foreground">Projects</h4>
+                    <h4 className="text-sm font-semibold text-muted-foreground">
+                      Projects
+                    </h4>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -166,27 +209,38 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       <span className="sr-only">Add Project</span>
                     </Button>
                   </div>
-                  {projects.map((project) => (
-                    <Link
-                      key={project.id}
-                      href={`/business-function/${businessFunctionId}/project/${project.id}`}
-                      className={cn(
-                        "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
-                        pathname === `/business-function/${businessFunctionId}/project/${project.id}`
-                          ? "bg-accent"
-                          : "hover:bg-accent",
-                      )}
-                    >
-                      <span>{project.name}</span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </Link>
-                  ))}
+                  {projectsLoading ? (
+                    <div>
+                      <span>Loading...</span>
+                    </div>
+                  ) : (
+                    <>
+                      {projects.map((project) => (
+                        <Link
+                          key={project.id}
+                          href={`/business-function/${businessFunctionId}/project/${project.id}`}
+                          className={cn(
+                            "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                            pathname ===
+                              `/business-function/${businessFunctionId}/project/${project.id}`
+                              ? "bg-accent"
+                              : "hover:bg-accent"
+                          )}
+                        >
+                          <span>{project.name}</span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>
           </ScrollArea>
         </aside>
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">{children}</main>
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+          {children}
+        </main>
       </div>
       <CreateBusinessFunctionModal
         isOpen={isCreateBusinessFunctionModalOpen}
@@ -198,6 +252,5 @@ export function Shell({ children }: { children: React.ReactNode }) {
         businessFunctionId={businessFunctionId}
       />
     </div>
-  )
+  );
 }
-

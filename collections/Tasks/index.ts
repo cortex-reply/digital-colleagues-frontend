@@ -1,4 +1,6 @@
 import type { CollectionConfig } from "payload";
+import { broadcastTaskChange } from "./hooks/broadcast-task-change";
+import { broadcastTaskDelete } from "./hooks/broadcast-task-delete";
 
 export const Tasks: CollectionConfig = {
   slug: "tasks",
@@ -7,6 +9,10 @@ export const Tasks: CollectionConfig = {
   },
   admin: {
     useAsTitle: "name",
+  },
+  hooks: {
+    afterChange: [broadcastTaskChange],
+    afterDelete: [broadcastTaskDelete],
   },
   fields: [
     {
@@ -22,7 +28,7 @@ export const Tasks: CollectionConfig = {
       type: "relationship",
       relationTo: "colleagues",
       required: false,
-      hasMany: false
+      hasMany: false,
     },
     {
       name: "status",
@@ -41,12 +47,18 @@ export const Tasks: CollectionConfig = {
       name: "project",
       type: "relationship",
       relationTo: "projects",
-      hasMany: false
+      hasMany: false,
     },
     {
-      name: 'parents',
-      type: 'relationship',
-      relationTo: 'tasks',
+      name: "epic",
+      type: "relationship",
+      relationTo: "epics",
+      hasMany: false,
+    },
+    {
+      name: "parents",
+      type: "relationship",
+      relationTo: "tasks",
       hasMany: true,
     },
     {
@@ -58,6 +70,13 @@ export const Tasks: CollectionConfig = {
     {
       name: "closureDate",
       type: "date",
+    },
+    {
+      name: "index",
+      type: "number",
+      required: true,
+      // unique: true,
+      defaultValue: 0,
     },
     {
       name: "comments",

@@ -19,6 +19,7 @@ import { Projects } from "./collections/Projects";
 import { Colleagues } from "./collections/Colleagues";
 import { Functions } from "./collections/Functions";
 import { KnowledgeBases } from "./collections/KnowledgeBases";
+import { websocket } from "./services";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -55,8 +56,22 @@ export default buildConfig({
     },
   }),
   sharp,
+  onInit: (payload) => {
+    console.log("initializing");
+
+    websocket.initialize(
+      { cors: { origin: "*" } }, // Adjust CORS for production
+      process.env.WEBSOCKET_PORT ? parseInt(process.env.WEBSOCKET_PORT) : 3001
+    );
+
+    console.log("onInit end:", Date.now());
+  },
   plugins: [
     payloadCloudPlugin(),
+    // websocketServerPlugin({
+    //   collections: ["tasks"],
+    //   port: 3001,
+    // }),
     // storage-adapter-placeholder
   ],
 });

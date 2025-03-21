@@ -220,6 +220,7 @@ export interface Project {
   id: number;
   name: string;
   description?: string | null;
+  businessFunction?: (number | null) | Function;
   workInstructions?: {
     root: {
       type: string;
@@ -235,55 +236,6 @@ export interface Project {
     };
     [k: string]: unknown;
   } | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tasks".
- */
-export interface Task {
-  id: number;
-  name?: string | null;
-  description?: string | null;
-  assignee?: (number | null) | Colleague;
-  status: 'backlog' | 'todo' | 'inProgress' | 'done' | 'cancelled';
-  project?: (number | null) | Project;
-  parents?: (number | Task)[] | null;
-  dateLogged: string;
-  closureDate?: string | null;
-  comments?:
-    | {
-        text: string;
-        author: number | User;
-        timestamp: string;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "colleagues".
- */
-export interface Colleague {
-  id: number;
-  colleagueType: 'human' | 'digital';
-  agents?: (number | null) | Agent;
-  human?: (number | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "squads".
- */
-export interface Squad {
-  id: number;
-  name: string;
-  description?: string | null;
-  colleagues?: (number | Colleague)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -318,6 +270,30 @@ export interface Function {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "squads".
+ */
+export interface Squad {
+  id: number;
+  name: string;
+  description?: string | null;
+  colleagues?: (number | Colleague)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "colleagues".
+ */
+export interface Colleague {
+  id: number;
+  colleagueType: 'human' | 'digital';
+  agents?: (number | null) | Agent;
+  human?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "knowledgeBases".
  */
 export interface KnowledgeBase {
@@ -325,6 +301,33 @@ export interface KnowledgeBase {
   knowledgeBaseId: string;
   name?: string | null;
   description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tasks".
+ */
+export interface Task {
+  id: number;
+  name?: string | null;
+  description?: string | null;
+  assignee?: (number | null) | Colleague;
+  status: 'backlog' | 'todo' | 'inProgress' | 'done' | 'cancelled';
+  project?: (number | null) | Project;
+  epic?: (number | null) | Epic;
+  parents?: (number | Task)[] | null;
+  dateLogged: string;
+  closureDate?: string | null;
+  index: number;
+  comments?:
+    | {
+        text: string;
+        author: number | User;
+        timestamp: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -508,9 +511,11 @@ export interface TasksSelect<T extends boolean = true> {
   assignee?: T;
   status?: T;
   project?: T;
+  epic?: T;
   parents?: T;
   dateLogged?: T;
   closureDate?: T;
+  index?: T;
   comments?:
     | T
     | {
@@ -540,6 +545,7 @@ export interface SquadsSelect<T extends boolean = true> {
 export interface ProjectsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
+  businessFunction?: T;
   workInstructions?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -1,0 +1,33 @@
+We are seeking a skilled developer to integrate a frontend with Payload CMS 3. The ideal candidate will have experience in building responsive and dynamic user interfaces that effectively communicate with the Payload CMS backend. You will be responsible for ensuring smooth data flow and implementing necessary UI and server side components. If you have a strong understanding of CMS integration and frontend technologies, we'd love to hear from you!
+
+The PayloadCMS and /admin route should need little change.
+All the work should mainly be around the front-end of the application
+
+1. Business Functions
+CRUD operations for business functions. - functions created and CR implemented in the front end - done integrating C and R
+waysOfworking should be a RichText component (from Payload CMS 3) - done
+add/remove colleagues ( only human colleagues ) from the function Squad - done
+
+2. Projects
+CRUD operations - functions created and CRUD implemented in the front end - C done. R correctly shown based on function, U done 
+
+3. Tasks:
+CRUD operations - functions created and ALL implemented in the front end - C done R done. 
+should update in real time across sessions (i.e. websockets) - in progress
+
+4. Epics:
+CRUD operations - functions created and ALL implemented in the front end
+should update in real time across sessions (i.e. websockets) - in progress
+
+Technical Requirements.
+use the provided example repo. it has a payload instance and a demo front end. these need to be integrated.
+- must use the PayloadCMS LOCAL API ( not the Restful or GraphQL interfaces)
+- must use Server Functions rather than creating API routes ( the real time update can be separate to this)
+- must use tailwindcss and shadcn components
+- must handle unauthorised responses from the local api gracefully; as well as empty responses.
+- MUST use the types provided. any changes to the types must be extended in Payload, not manually
+
+
+To apply, write clearly that you have read and understood the ask. I will provide the code on request.
+Please ensure that you fully understand the ask and know how to complete the task before applying.
+There will be no payment for partial completion and the deadline will be Tuesday the 18th March 2025. Non completion by this date will result in the contract being cancelled unless by prior agreement. Do not contact me outside this platform

@@ -4,12 +4,16 @@ import {
   HeadingFeature,
   InlineToolbarFeature,
   lexicalEditor,
-} from '@payloadcms/richtext-lexical';
+} from "@payloadcms/richtext-lexical";
+import { squadCleanup } from "./hooks/squad-cleanup";
 
 export const Functions: CollectionConfig = {
   slug: "functions",
   access: {
     read: () => true, // Public read access
+  },
+  hooks: {
+    afterDelete: [squadCleanup],
   },
   admin: {
     useAsTitle: "name",
@@ -25,17 +29,17 @@ export const Functions: CollectionConfig = {
       type: "textarea",
     },
     {
-      name: 'waysOfWorking',
-      label: 'Ways of working',
-      type: 'richText',
+      name: "waysOfWorking",
+      label: "Ways of working",
+      type: "richText",
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [
             ...rootFeatures,
-            HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+            HeadingFeature({ enabledHeadingSizes: ["h2", "h3", "h4"] }),
             FixedToolbarFeature(),
             InlineToolbarFeature(),
-          ]
+          ];
         },
       }),
     },
@@ -47,12 +51,13 @@ export const Functions: CollectionConfig = {
       name: "squad",
       type: "relationship",
       relationTo: "squads",
-      hasMany: false
+      hasMany: false,
+      unique: true,
     },
     {
       name: "knowledeBase",
       type: "relationship",
-      relationTo: "knowledgeBases"
-    }
+      relationTo: "knowledgeBases",
+    },
   ],
 };
